@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import Image from 'next/image';
-// import { useRouter } from 'next/navigation';
+import { useState } from "react";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
 
 interface LoginCredentials {
   email: string;
@@ -10,21 +10,22 @@ interface LoginCredentials {
 }
 
 export default function LoginForm() {
-// Uncomment when router is needed
-// const router = useRouter();
+  const router = useRouter();
   const [credentials, setCredentials] = useState<LoginCredentials>({
-    email: '',
-    password: ''
+    email: "",
+    password: "",
   });
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+//   const [error, setError] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(credentials),
       });
@@ -32,35 +33,48 @@ export default function LoginForm() {
       const data = await response.json();
 
       if (!response.ok) {
-        console.error('Login gagal:', data.error);
-        // Tambahkan notifikasi error jika diperlukan
+        console.error("Login gagal:", data.error);
         return;
       }
 
-      // Tampilkan data JWT ke console
-      console.log('Login berhasil!');
-      console.log('Token JWT:', data.token);
-      
-      // Decode token untuk melihat payload (opsional, untuk debugging)
-      const payload = JSON.parse(atob(data.token.split('.')[1]));
-      console.log('Token payload:', payload);
+      // Simpan token dan role ke cookies daripada localStorage
+      document.cookie = `token=${data.token}; path=/`;
+      document.cookie = `userRole=${data.role}; path=/`;
 
-      // Simpan token ke localStorage
-      localStorage.setItem('token', data.token);
-      
-      // Redirect ke dashboard (uncomment jika sudah siap)
-      // router.push('/dashboard');
+      console.log("Login berhasil!");
+      console.log("Role:", data.role);
+
+      if (data.role === "hr") {
+        router.replace("/dashboard/hr");
+      } else {
+        router.replace("/dashboard");
+      }
+
     } catch (error) {
-      console.error('Terjadi kesalahan:', error);
-      // Tambahkan notifikasi error jika diperlukan
+      console.error("Terjadi kesalahan:", error);
     }
   };
 
+  // Tambahkan di bagian JSX, sebelum form:
+//   {error && (
+//     return <div className="mb-4 text-center text-red-600">
+//       {error}
+//     </div>
+//   )}
+
+  // Modifikasi tombol submit:
+  <button
+    type="submit"
+    disabled={isLoading}
+    className="w-full transform rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 py-3 text-sm font-medium text-white transition-all hover:from-blue-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
+  >
+    {isLoading ? 'Memproses...' : 'Masuk'}
+  </button>
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setCredentials(prev => ({
+    setCredentials((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 

@@ -12,10 +12,24 @@ export async function POST(request: Request) {
       const token = signJWT({
         sub: '1', // user id dari database
         email: email,
-        role: 'admin',
+        role: 'hr', // role hr untuk admin
       });
 
-      return NextResponse.json({ token });
+      return NextResponse.json({ 
+        token,
+        role: 'hr'
+      });
+    } else if (email === 'employee@example.com' && password === 'password') {
+      const token = signJWT({
+        sub: '2', // user id dari database
+        email: email,
+        role: 'employee', // role karyawan
+      });
+
+      return NextResponse.json({ 
+        token,
+        role: 'employee'
+      });
     }
 
     return NextResponse.json(
