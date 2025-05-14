@@ -1,7 +1,26 @@
 "use client";
 
 import Background from "@/components/Background";
-import { useEffect, useState } from "react";
+import { useState, useRef } from "react";
+import dynamic from "next/dynamic";
+
+// Import Leaflet secara dinamis untuk menghindari masalah SSR
+const MapContainer = dynamic(
+  () => import("react-leaflet").then((mod) => mod.MapContainer),
+  { ssr: false }
+);
+const TileLayer = dynamic(
+  () => import("react-leaflet").then((mod) => mod.TileLayer),
+  { ssr: false }
+);
+const Marker = dynamic(
+  () => import("react-leaflet").then((mod) => mod.Marker),
+  { ssr: false }
+);
+const Popup = dynamic(
+  () => import("react-leaflet").then((mod) => mod.Popup),
+  { ssr: false }
+);
 
 interface AttendanceStatus {
   status: "present" | "absent" | "not_yet";
@@ -19,25 +38,156 @@ export default function DashboardPage() {
   const [attendance, setAttendance] = useState<AttendanceStatus>({
     status: "not_yet",
   });
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [showCamera, setShowCamera] = useState(false);
+  const [position, setPosition] = useState<GeolocationPosition | null>(null);
+  const [photo, setPhoto] = useState<string | null>(null);
 
-  useEffect(() => {
-    // TODO: Fetch data dari API
-    // Ini hanya data dummy untuk tampilan
-    setAttendance({
-      status: "present",
-      checkIn: "08:00",
-      checkOut: "17:00",
-      duration: "9 jam",
-      location: {
-        latitude: -6.2088,
-        longitude: 106.8456,
-        address: "Jl. Sudirman No. 123, Jakarta",
-      },
-    });
-  }, []);
+  const handleCheckIn = async () => {
+    try {
+      // Dapatkan lokasi saat ini
+      const currentPosition = await new Promise<GeolocationPosition>((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(resolve, reject);
+      });
+      setPosition(currentPosition);
+
+      // Aktifkan kamera
+      setShowCamera(true);
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        video: {
+          width: { ideal: 1280 },
+          height: { ideal: 720 },
+          facingMode: "user"
+        } 
+      });
+      
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        // Pastikan video dimuat sebelum diplay
+        await videoRef.current.play();
+      }
+    } catch (error) {
+      console.error('Error during check-in:', error);
+      // TODO: Tampilkan pesan error ke user
+    }
+  };
+
+  const handleCheckOut = async () => {
+    try {
+      // Dapatkan lokasi saat ini
+      const currentPosition = await new Promise<GeolocationPosition>((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(resolve, reject);
+      });
+
+      // Hitung durasi kerja dengan benar
+      const today = new Date().toISOString().split('T')[0]; // Ambil tanggal hari ini
+      const checkInTime = new Date(`${today} ${attendance.checkIn}`);
+      const checkOutTime = new Date();
+      
+      // Hitung selisih dalam milidetik
+      let durationMs = checkOutTime.getTime() - checkInTime.getTime();
+      
+      // Jika durasi negatif (karena pergantian hari), tambahkan 24 jam
+      if (durationMs < 0) {
+        durationMs += 24 * 60 * 60 * 1000;
+      }
+
+      // Hitung jam, menit, detik
+      const hours = Math.floor(durationMs / (1000 * 60 * 60));
+      const minutes = Math.floor((durationMs % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((durationMs % (1000 * 60)) / 1000);
+      const durationStr = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+
+      // Kirim data check-out ke API
+      const checkOutData = {
+        timestamp: new Date().toISOString(),
+        location: {
+          latitude: currentPosition.coords.latitude,
+          longitude: currentPosition.coords.longitude,
+          address: "Akan diisi dari hasil geocoding",
+        }
+      };
+      console.log("THIS IS CHECKOUT DATA:", checkOutData);
+
+      // Update state setelah check-out berhasil
+      setAttendance(prev => ({
+        ...prev,
+        checkOut: new Date().toLocaleTimeString('id-ID', {
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+          hour12: false
+        }).replace(/\./g, ':'),
+        duration: durationStr,
+        location: {
+          ...prev.location!,
+          latitude: currentPosition.coords.latitude,
+          longitude: currentPosition.coords.longitude,
+          address: "Akan diisi dari hasil geocoding",
+        }
+      }));
+
+    } catch (error) {
+      console.error('Error during check-out:', error);
+      // TODO: Tampilkan pesan error ke user
+    }
+  };
+
+  const handleCapturePhoto = async () => {
+    try {
+      if (!position || !videoRef.current) return;
+
+      // Ambil foto
+      const canvas = document.createElement('canvas');
+      canvas.width = videoRef.current.videoWidth;
+      canvas.height = videoRef.current.videoHeight;
+      canvas.getContext('2d')?.drawImage(videoRef.current, 0, 0);
+      const photoData = canvas.toDataURL('image/jpeg');
+      setPhoto(photoData);
+
+      // Kirim data check-in ke API
+      const checkInData = {
+        timestamp: new Date().toISOString(),
+        location: {
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+          address: "Akan diisi dari hasil geocoding",
+        },
+        photo: photo,
+      };
+      console.log("THIS IS CHECKIN DATA:", checkInData);
+
+      // Update state setelah check-in berhasil
+      setAttendance(prev => ({
+        ...prev,
+        status: "present",
+        checkIn: new Date().toLocaleTimeString('id-ID', {
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+          hour12: false
+        }).replace(/\./g, ':'),
+        location: {
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+          address: "Akan diisi dari hasil geocoding",
+        }
+      }));
+
+      // Matikan kamera
+      if (videoRef.current?.srcObject) {
+        const tracks = (videoRef.current.srcObject as MediaStream).getTracks();
+        tracks.forEach(track => track.stop());
+      }
+      setShowCamera(false);
+    } catch (error) {
+      console.error('Error during photo capture:', error);
+      // TODO: Tampilkan pesan error ke user
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-[#1a1a1a] fixed inset-0">
+    <div className="min-h-screen bg-[#1a1a1a]">
       {/* Geometric Accents - Fixed Position */}
       <Background/>
       
@@ -46,7 +196,7 @@ export default function DashboardPage() {
 
       {/* Scrollable Content Container */}
       <div className="relative h-screen overflow-auto">
-        <div className="mx-auto max-w-4xl space-y-6 p-4 pb-24 sm:p-6">
+        <div className="mx-auto max-w-4xl space-y-6 p-4 pb-2 sm:p-6">
           {/* Header Card */}
           <div className="rounded-2xl bg-black/40 p-6 shadow-xl ring-1 ring-yellow-500/20 backdrop-blur-lg">
             <div className="flex items-center justify-between">
@@ -79,14 +229,14 @@ export default function DashboardPage() {
               {attendance.status === "not_yet" ? (
                 <button
                   className="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-black font-medium rounded-lg transition-colors"
-                  onClick={() => {/* TODO: Implement check in */}}
+                  onClick={handleCheckIn}
                 >
                   Check In
                 </button>
               ) : attendance.status === "present" && !attendance.checkOut ? (
                 <button
                   className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white font-medium rounded-lg transition-colors"
-                  onClick={() => {/* TODO: Implement check out */}}
+                  onClick={handleCheckOut}
                 >
                   Check Out
                 </button>
@@ -139,10 +289,22 @@ export default function DashboardPage() {
                 <h3 className="text-sm font-medium text-yellow-400">Lokasi Absen</h3>
                 {attendance.location ? (
                   <>
-                    <div className="mt-4 h-40 w-full rounded-lg bg-black/40 ring-1 ring-yellow-500/20">
-                      <div className="flex h-full items-center justify-center text-sm text-zinc-400">
-                        Peta Lokasi
-                      </div>
+                    <div className="mt-4 h-60 w-full rounded-lg bg-black/40 ring-1 ring-yellow-500/20 overflow-hidden">
+                      <MapContainer
+                        center={[attendance.location.latitude, attendance.location.longitude]}
+                        zoom={16}
+                        style={{ height: "100%", width: "100%" }}
+                      >
+                        <TileLayer
+                          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                        />
+                        <Marker position={[attendance.location.latitude, attendance.location.longitude]}>
+                          <Popup>
+                            Lokasi Absen
+                          </Popup>
+                        </Marker>
+                      </MapContainer>
                     </div>
                     <p className="mt-3 text-xs text-zinc-400">
                       {attendance.location.address}
@@ -156,6 +318,44 @@ export default function DashboardPage() {
           </div>
         </div>
       </div>
+      {/* Camera Modal */}
+      {showCamera && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50">
+          <div className="bg-black/60 p-4 sm:p-6 rounded-2xl backdrop-blur-lg ring-1 ring-yellow-500/20 w-full h-full sm:h-auto sm:max-w-2xl mx-auto flex flex-col">
+            <h3 className="text-lg font-medium text-yellow-400 mb-4">Ambil Foto Absen</h3>
+            <div className="relative flex-1 sm:aspect-video w-full overflow-hidden rounded-lg bg-black">
+              <video
+                ref={videoRef}
+                autoPlay
+                playsInline
+                muted
+                style={{ transform: 'scaleX(-1)' }}
+                className="absolute inset-0 h-full w-full object-cover"
+              />
+            </div>
+            <div className="mt-4 flex justify-end space-x-4">
+              <button
+                onClick={() => {
+                  if (videoRef.current?.srcObject) {
+                    const tracks = (videoRef.current.srcObject as MediaStream).getTracks();
+                    tracks.forEach(track => track.stop());
+                  }
+                  setShowCamera(false);
+                }}
+                className="px-4 py-2 text-sm font-medium text-yellow-400 hover:bg-yellow-500/10 rounded-lg transition-colors"
+              >
+                Batal
+              </button>
+              <button
+                onClick={handleCapturePhoto}
+                className="px-4 py-2 text-sm font-medium bg-yellow-500 text-black hover:bg-yellow-600 rounded-lg transition-colors"
+              >
+                Ambil Foto & Check In
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
