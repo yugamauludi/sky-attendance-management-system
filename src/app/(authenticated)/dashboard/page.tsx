@@ -1,7 +1,26 @@
 "use client";
 
-import { useEffect, useState } from "react";
-// import Image from 'next/image';
+import Background from "@/components/Background";
+import { useState, useRef } from "react";
+import dynamic from "next/dynamic";
+
+// Import Leaflet secara dinamis untuk menghindari masalah SSR
+const MapContainer = dynamic(
+  () => import("react-leaflet").then((mod) => mod.MapContainer),
+  { ssr: false }
+);
+const TileLayer = dynamic(
+  () => import("react-leaflet").then((mod) => mod.TileLayer),
+  { ssr: false }
+);
+const Marker = dynamic(
+  () => import("react-leaflet").then((mod) => mod.Marker),
+  { ssr: false }
+);
+const Popup = dynamic(
+  () => import("react-leaflet").then((mod) => mod.Popup),
+  { ssr: false }
+);
 
 interface AttendanceStatus {
   status: "present" | "absent" | "not_yet";
@@ -19,113 +38,324 @@ export default function DashboardPage() {
   const [attendance, setAttendance] = useState<AttendanceStatus>({
     status: "not_yet",
   });
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [showCamera, setShowCamera] = useState(false);
+  const [position, setPosition] = useState<GeolocationPosition | null>(null);
+  const [photo, setPhoto] = useState<string | null>(null);
 
-  useEffect(() => {
-    // TODO: Fetch data dari API
-    // Ini hanya data dummy untuk tampilan
-    setAttendance({
-      status: "present",
-      checkIn: "08:00",
-      checkOut: "17:00",
-      duration: "9 jam",
-      location: {
-        latitude: -6.2088,
-        longitude: 106.8456,
-        address: "Jl. Sudirman No. 123, Jakarta",
-      },
-    });
-  }, []);
+  const handleCheckIn = async () => {
+    try {
+      // Dapatkan lokasi saat ini
+      const currentPosition = await new Promise<GeolocationPosition>((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(resolve, reject);
+      });
+      setPosition(currentPosition);
+
+      // Aktifkan kamera
+      setShowCamera(true);
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        video: {
+          width: { ideal: 1280 },
+          height: { ideal: 720 },
+          facingMode: "user"
+        } 
+      });
+      
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        // Pastikan video dimuat sebelum diplay
+        await videoRef.current.play();
+      }
+    } catch (error) {
+      console.error('Error during check-in:', error);
+      // TODO: Tampilkan pesan error ke user
+    }
+  };
+
+  const handleCheckOut = async () => {
+    try {
+      // Dapatkan lokasi saat ini
+      const currentPosition = await new Promise<GeolocationPosition>((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(resolve, reject);
+      });
+
+      // Hitung durasi kerja dengan benar
+      const today = new Date().toISOString().split('T')[0]; // Ambil tanggal hari ini
+      const checkInTime = new Date(`${today} ${attendance.checkIn}`);
+      const checkOutTime = new Date();
+      
+      // Hitung selisih dalam milidetik
+      let durationMs = checkOutTime.getTime() - checkInTime.getTime();
+      
+      // Jika durasi negatif (karena pergantian hari), tambahkan 24 jam
+      if (durationMs < 0) {
+        durationMs += 24 * 60 * 60 * 1000;
+      }
+
+      // Hitung jam, menit, detik
+      const hours = Math.floor(durationMs / (1000 * 60 * 60));
+      const minutes = Math.floor((durationMs % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((durationMs % (1000 * 60)) / 1000);
+      const durationStr = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+
+      // Kirim data check-out ke API
+      const checkOutData = {
+        timestamp: new Date().toISOString(),
+        location: {
+          latitude: currentPosition.coords.latitude,
+          longitude: currentPosition.coords.longitude,
+          address: "Akan diisi dari hasil geocoding",
+        }
+      };
+      console.log("THIS IS CHECKOUT DATA:", checkOutData);
+
+      // Update state setelah check-out berhasil
+      setAttendance(prev => ({
+        ...prev,
+        checkOut: new Date().toLocaleTimeString('id-ID', {
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+          hour12: false
+        }).replace(/\./g, ':'),
+        duration: durationStr,
+        location: {
+          ...prev.location!,
+          latitude: currentPosition.coords.latitude,
+          longitude: currentPosition.coords.longitude,
+          address: "Akan diisi dari hasil geocoding",
+        }
+      }));
+
+    } catch (error) {
+      console.error('Error during check-out:', error);
+      // TODO: Tampilkan pesan error ke user
+    }
+  };
+
+  const handleCapturePhoto = async () => {
+    try {
+      if (!position || !videoRef.current) return;
+
+      // Ambil foto
+      const canvas = document.createElement('canvas');
+      canvas.width = videoRef.current.videoWidth;
+      canvas.height = videoRef.current.videoHeight;
+      canvas.getContext('2d')?.drawImage(videoRef.current, 0, 0);
+      const photoData = canvas.toDataURL('image/jpeg');
+      setPhoto(photoData);
+
+      // Kirim data check-in ke API
+      const checkInData = {
+        timestamp: new Date().toISOString(),
+        location: {
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+          address: "Akan diisi dari hasil geocoding",
+        },
+        photo: photo,
+      };
+      console.log("THIS IS CHECKIN DATA:", checkInData);
+
+      // Update state setelah check-in berhasil
+      setAttendance(prev => ({
+        ...prev,
+        status: "present",
+        checkIn: new Date().toLocaleTimeString('id-ID', {
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+          hour12: false
+        }).replace(/\./g, ':'),
+        location: {
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+          address: "Akan diisi dari hasil geocoding",
+        }
+      }));
+
+      // Matikan kamera
+      if (videoRef.current?.srcObject) {
+        const tracks = (videoRef.current.srcObject as MediaStream).getTracks();
+        tracks.forEach(track => track.stop());
+      }
+      setShowCamera(false);
+    } catch (error) {
+      console.error('Error during photo capture:', error);
+      // TODO: Tampilkan pesan error ke user
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-gray-100 p-6">
-      <div className="mx-auto max-w-4xl space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between rounded-lg bg-white p-6 shadow-md">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-800">
-              Dashboard Karyawan
-            </h1>
-            <p className="text-gray-600">Selamat datang kembali!</p>
-          </div>
-          <div className="text-right">
-            <p className="text-sm text-gray-600">Hari ini</p>
-            <p className="text-lg font-semibold text-gray-800">
-              {new Date().toLocaleDateString("id-ID", {
-                weekday: "long",
-                year: "numeric",
-                month: "long",
-                day: "numeric",
-              })}
-            </p>
-          </div>
-        </div>
+    <div className="min-h-screen bg-[#1a1a1a]">
+      {/* Geometric Accents - Fixed Position */}
+      <Background/>
+      
+      {/* Animated Background Grid */}
+      <div className="fixed inset-0 bg-[url('/grid.svg')] bg-center opacity-5" />
 
-        {/* Status Kehadiran */}
-        <div className="rounded-lg bg-white p-6 shadow-md">
-          <h2 className="mb-4 text-xl font-semibold text-gray-800">
-            Status Kehadiran
-          </h2>
-          <div className="grid gap-6 md:grid-cols-2">
-            <div className="space-y-4 rounded-lg bg-blue-50 p-4">
-              <div className="flex items-center justify-between">
-                <span className="text-gray-600">Status</span>
-                <span
-                  className={`rounded-full px-3 py-1 text-sm font-medium ${
-                    attendance.status === "present"
-                      ? "bg-green-100 text-green-800"
-                      : attendance.status === "absent"
-                      ? "bg-red-100 text-red-800"
-                      : "bg-yellow-100 text-yellow-800"
-                  }`}
-                >
-                  {attendance.status === "present"
-                    ? "Sudah Absen"
-                    : attendance.status === "absent"
-                    ? "Tidak Hadir"
-                    : "Belum Absen"}
-                </span>
+      {/* Scrollable Content Container */}
+      <div className="relative h-screen overflow-auto">
+        <div className="mx-auto max-w-4xl space-y-6 p-4 pb-2 sm:p-6">
+          {/* Header Card */}
+          <div className="rounded-2xl bg-black/40 p-6 shadow-xl ring-1 ring-yellow-500/20 backdrop-blur-lg">
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="bg-gradient-to-r from-yellow-400 to-yellow-600 bg-clip-text text-2xl font-bold text-transparent">
+                  Dashboard Karyawan
+                </h1>
+                <p className="mt-1 text-sm text-zinc-400">Selamat datang kembali!</p>
               </div>
-              <div className="flex items-center justify-between">
-                <span className="text-gray-600">Waktu Masuk</span>
-                <span className="font-medium text-gray-800">
-                  {attendance.checkIn || "-"}
-                </span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-gray-600">Waktu Keluar</span>
-                <span className="font-medium text-gray-800">
-                  {attendance.checkOut || "-"}
-                </span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-gray-600">Durasi Kerja</span>
-                <span className="font-medium text-gray-800">
-                  {attendance.duration || "-"}
-                </span>
+              <div className="text-right">
+                <p className="text-xs text-zinc-400">Hari ini</p>
+                <p className="mt-1 text-sm font-medium text-yellow-400">
+                  {new Date().toLocaleDateString("id-ID", {
+                    weekday: "long",
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                  })}
+                </p>
               </div>
             </div>
+          </div>
 
-            <div className="space-y-4 rounded-lg bg-gray-50 p-4">
-              <h3 className="font-medium text-gray-800">Lokasi Absen</h3>
-              {attendance.location ? (
-                <>
-                  <div className="h-40 w-full rounded-lg bg-gray-200">
-                    {/* Di sini bisa ditambahkan peta lokasi */}
-                    <div className="flex h-full items-center justify-center text-gray-500">
-                      Peta Lokasi
-                    </div>
+          {/* Status Kehadiran Card */}
+          <div className="rounded-2xl bg-black/40 p-6 shadow-xl ring-1 ring-yellow-500/20 backdrop-blur-lg">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-semibold text-yellow-400">
+                Status Kehadiran
+              </h2>
+              {attendance.status === "not_yet" ? (
+                <button
+                  className="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-black font-medium rounded-lg transition-colors"
+                  onClick={handleCheckIn}
+                >
+                  Check In
+                </button>
+              ) : attendance.status === "present" && !attendance.checkOut ? (
+                <button
+                  className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white font-medium rounded-lg transition-colors"
+                  onClick={handleCheckOut}
+                >
+                  Check Out
+                </button>
+              ) : null}
+            </div>
+            
+            <div className="mt-6 grid gap-6 md:grid-cols-2">
+              <div className="rounded-xl bg-gradient-to-b from-black/60 to-black/40 p-5 ring-1 ring-yellow-500/20">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-zinc-400">Status</span>
+                  <span
+                    className={`rounded-full px-3 py-1 text-xs font-medium ${
+                      attendance.status === "present"
+                        ? "bg-yellow-400/10 text-yellow-400 ring-1 ring-yellow-400/20"
+                        : attendance.status === "absent"
+                        ? "bg-red-400/10 text-red-400 ring-1 ring-red-400/20"
+                        : "bg-blue-400/10 text-blue-400 ring-1 ring-blue-400/20"
+                    }`}
+                  >
+                    {attendance.status === "present"
+                      ? "Sudah Absen"
+                      : attendance.status === "absent"
+                      ? "Tidak Hadir"
+                      : "Belum Absen"}
+                  </span>
+                </div>
+                <div className="mt-6 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-zinc-400">Waktu Masuk</span>
+                    <span className="text-sm font-medium text-yellow-400">
+                      {attendance.checkIn || "-"}
+                    </span>
                   </div>
-                  <p className="text-sm text-gray-600">
-                    {attendance.location.address}
-                  </p>
-                </>
-              ) : (
-                <p className="text-gray-600">Belum ada data lokasi</p>
-              )}
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-zinc-400">Waktu Keluar</span>
+                    <span className="text-sm font-medium text-yellow-400">
+                      {attendance.checkOut || "-"}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-zinc-400">Durasi Kerja</span>
+                    <span className="text-sm font-medium text-yellow-400">
+                      {attendance.duration || "-"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="rounded-xl bg-gradient-to-b from-black/60 to-black/40 p-5 ring-1 ring-yellow-500/20">
+                <h3 className="text-sm font-medium text-yellow-400">Lokasi Absen</h3>
+                {attendance.location ? (
+                  <>
+                    <div className="mt-4 h-60 w-full rounded-lg bg-black/40 ring-1 ring-yellow-500/20 overflow-hidden">
+                      <MapContainer
+                        center={[attendance.location.latitude, attendance.location.longitude]}
+                        zoom={16}
+                        style={{ height: "100%", width: "100%" }}
+                      >
+                        <TileLayer
+                          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                        />
+                        <Marker position={[attendance.location.latitude, attendance.location.longitude]}>
+                          <Popup>
+                            Lokasi Absen
+                          </Popup>
+                        </Marker>
+                      </MapContainer>
+                    </div>
+                    <p className="mt-3 text-xs text-zinc-400">
+                      {attendance.location.address}
+                    </p>
+                  </>
+                ) : (
+                  <p className="mt-2 text-sm text-zinc-400">Belum ada data lokasi</p>
+                )}
+              </div>
             </div>
           </div>
         </div>
       </div>
+      {/* Camera Modal */}
+      {showCamera && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50">
+          <div className="bg-black/60 p-4 sm:p-6 rounded-2xl backdrop-blur-lg ring-1 ring-yellow-500/20 w-full h-full sm:h-auto sm:max-w-2xl mx-auto flex flex-col">
+            <h3 className="text-lg font-medium text-yellow-400 mb-4">Ambil Foto Absen</h3>
+            <div className="relative flex-1 sm:aspect-video w-full overflow-hidden rounded-lg bg-black">
+              <video
+                ref={videoRef}
+                autoPlay
+                playsInline
+                muted
+                style={{ transform: 'scaleX(-1)' }}
+                className="absolute inset-0 h-full w-full object-cover"
+              />
+            </div>
+            <div className="mt-4 flex justify-end space-x-4">
+              <button
+                onClick={() => {
+                  if (videoRef.current?.srcObject) {
+                    const tracks = (videoRef.current.srcObject as MediaStream).getTracks();
+                    tracks.forEach(track => track.stop());
+                  }
+                  setShowCamera(false);
+                }}
+                className="px-4 py-2 text-sm font-medium text-yellow-400 hover:bg-yellow-500/10 rounded-lg transition-colors"
+              >
+                Batal
+              </button>
+              <button
+                onClick={handleCapturePhoto}
+                className="px-4 py-2 text-sm font-medium bg-yellow-500 text-black hover:bg-yellow-600 rounded-lg transition-colors"
+              >
+                Ambil Foto & Check In
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

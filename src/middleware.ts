@@ -75,8 +75,8 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/dashboard', request.url));
   }
 
-  // Jika mengakses halaman dashboard tanpa token, redirect ke login
-  if (request.nextUrl.pathname.startsWith('/dashboard') && !token) {
+  // Jika mengakses halaman dashboard atau profile tanpa token, redirect ke login
+  if ((request.nextUrl.pathname.startsWith('/dashboard') || request.nextUrl.pathname === '/profile') && !token) {
     return NextResponse.redirect(new URL('/login', request.url));
   }
 
