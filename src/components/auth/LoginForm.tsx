@@ -16,8 +16,6 @@ export default function LoginForm() {
     password: "",
   });
   const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-//   const [error, setError] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -55,21 +53,6 @@ export default function LoginForm() {
     }
   };
 
-  // Tambahkan di bagian JSX, sebelum form:
-//   {error && (
-//     return <div className="mb-4 text-center text-red-600">
-//       {error}
-//     </div>
-//   )}
-
-  // Modifikasi tombol submit:
-  <button
-    type="submit"
-    disabled={isLoading}
-    className="w-full transform rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 py-3 text-sm font-medium text-white transition-all hover:from-blue-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
-  >
-    {isLoading ? 'Memproses...' : 'Masuk'}
-  </button>
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setCredentials((prev) => ({
