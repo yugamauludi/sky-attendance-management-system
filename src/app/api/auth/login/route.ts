@@ -6,13 +6,11 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { email, password } = body;
 
-    // TODO: Validasi kredensial dengan database
-    // Ini hanya contoh, ganti dengan logika autentikasi yang sebenarnya
     if (email === 'admin@example.com' && password === 'password') {
       const token = signJWT({
-        sub: '1', // user id dari database
+        sub: '1',
         email: email,
-        role: 'hr', // role hr untuk admin
+        role: 'hr',
       });
 
       return NextResponse.json({ 
