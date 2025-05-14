@@ -8,7 +8,7 @@ export default function AuthenticatedLayout({
   return (
     <div className="min-h-screen bg-gray-100">
       <Navbar />
-      <main className="p-6">{children}</main>
+      <main className="p-2">{children}</main>
     </div>
   );
 }
