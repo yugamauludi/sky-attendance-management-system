@@ -5,6 +5,8 @@ import { DataTable } from "@/components/DataTable";
 import DetailModal from "@/components/DetailModal";
 import Background from "@/components/Background";
 import Link from "next/link";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 export interface EmployeeAttendance {
   id: string;
@@ -25,6 +27,16 @@ interface EmployeeDetail {
 
 export default function HRDashboardPage() {
   const [attendances, setAttendances] = useState<EmployeeAttendance[]>([]);
+  const [filteredAttendances, setFilteredAttendances] = useState<
+    EmployeeAttendance[]
+  >([]);
+  const [filters, setFilters] = useState({
+    name: "",
+    startDate: null as Date | null,
+    endDate: null as Date | null,
+    location: "",
+    status: "",
+  });
   const [stats, setStats] = useState({
     totalKaryawan: 0,
     inhouse: 0,
@@ -33,7 +45,40 @@ export default function HRDashboardPage() {
     sakit: 0,
     cuti: 0,
   });
-  
+
+  useEffect(() => {
+    // Filter data berdasarkan kriteria
+    const filtered = attendances.filter((attendance) => {
+      const matchName = attendance.name
+        .toLowerCase()
+        .includes(filters.name.toLowerCase());
+      const matchLocation = attendance.location
+        .toLowerCase()
+        .includes(filters.location.toLowerCase());
+      const matchStatus =
+        filters.status === "" || attendance.status === filters.status;
+
+      let matchDate = true;
+      if (filters.startDate && filters.endDate) {
+        const attendanceDate = new Date(attendance.date);
+        // Set waktu ke 00:00:00 untuk startDate
+        const startDate = new Date(filters.startDate);
+        startDate.setHours(0, 0, 0, 0);
+        
+        // Set waktu ke 23:59:59 untuk endDate
+        const endDate = new Date(filters.endDate);
+        endDate.setHours(23, 59, 59, 999);
+        
+        matchDate = attendanceDate >= startDate && attendanceDate <= endDate;
+      }
+
+      return matchName && matchLocation && matchStatus && matchDate;
+    });
+
+    setFilteredAttendances(filtered);
+  }, [attendances, filters]);
+
+
   const columns = [
     { key: "name", label: "Nama Karyawan" },
     { key: "date", label: "Tanggal", hiddenOnMobile: true },
@@ -97,7 +142,7 @@ export default function HRDashboardPage() {
         name: "Budi Santoso",
         location:
           "Karawaci Office Park Blok H no 20, Jl. Imam Bonjol Lippo, RT.001/RW.009, Karawaci, Tangerang City, Banten 15115",
-        date: "2024-01-15",
+        date: "2025-03-15",
         checkIn: "08:00",
         checkOut: "17:00",
         duration: "9 jam",
@@ -107,7 +152,7 @@ export default function HRDashboardPage() {
         id: "2",
         name: "Ani Wijaya",
         location: "Bandung",
-        date: "2024-01-15",
+        date: "2025-05-15",
         checkIn: "-",
         checkOut: "-",
         duration: "-",
@@ -118,7 +163,7 @@ export default function HRDashboardPage() {
         id: "3",
         name: "Dedi Kurniawan",
         location: "Surabaya",
-        date: "2024-01-15",
+        date: "2024-04-15",
         checkIn: "-",
         checkOut: "-",
         duration: "-",
@@ -126,7 +171,7 @@ export default function HRDashboardPage() {
         notes: "Izin Sakit dengan Surat Dokter",
       },
     ]);
-    
+
     // Set statistik dummy
     setStats({
       totalKaryawan: 50,
@@ -139,12 +184,15 @@ export default function HRDashboardPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#1a1a1a]">
+    <div className="min-h-screen bg-[#1a1a1a] overflow-auto">
+      {" "}
+      {/* Tambahkan overflow-auto di sini */}
       <Background />
-
-      {/* Scrollable Content Container */}
-      <div className="relative h-screen overflow-auto">
-        <div className="mx-4 lg:mx-8">
+      {/* Content Container - hapus overflow-auto */}
+      <div className="relative min-h-screen">
+        <div className="mx-4 lg:mx-8 pb-8">
+          {" "}
+          {/* Tambahkan padding bottom */}
           {/* Header Card */}
           <div id="dashboard-head" className="py-2">
             <div className="flex items-center justify-between">
@@ -156,93 +204,263 @@ export default function HRDashboardPage() {
                   Monitoring Kehadiran Karyawan
                 </p>
               </div>
-              <div className="flex space-x-2">
+            </div>
+
+            {/* Quick Actions Card */}
+            <div className="mt-4 rounded-xl bg-black/30 p-4 ring-1 ring-yellow-500/10">
+              <h3 className="text-sm font-medium text-yellow-400 mb-3">
+                Quick Actions
+              </h3>
+              <div className="flex space-x-4">
                 <Link
                   href="/dashboard/hr/leave-approval"
-                  className="rounded-lg bg-yellow-500 px-4 py-2 text-sm font-medium text-black hover:bg-yellow-600"
+                  className="flex flex-col items-center justify-center rounded-lg bg-black/30 p-4 transition-all hover:bg-black/50 hover:ring-1 hover:ring-yellow-500/40 relative group"
                 >
-                  Approval Cuti
+                  <div className="rounded-full bg-yellow-500/10 p-3 mb-2 group-hover:bg-yellow-500/20">
+                    <svg
+                      className="h-6 w-6 text-yellow-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+                      />
+                    </svg>
+                  </div>
+                  <span className="text-sm font-medium text-zinc-300">
+                    Approval Cuti
+                  </span>
+                  {stats.cuti > 0 && (
+                    <span className="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white">
+                      {stats.cuti}
+                    </span>
+                  )}
                 </Link>
+
                 <Link
                   href="/dashboard/hr/add"
-                  className="rounded-lg bg-yellow-500 px-4 py-2 text-sm font-medium text-black hover:bg-yellow-600"
+                  className="flex flex-col items-center justify-center rounded-lg bg-black/30 p-4 transition-all hover:bg-black/50 hover:ring-1 hover:ring-yellow-500/40 group"
                 >
-                  Tambah Karyawan
+                  <div className="rounded-full bg-yellow-500/10 p-3 mb-2 group-hover:bg-yellow-500/20">
+                    <svg
+                      className="h-6 w-6 text-yellow-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 4v16m8-8H4"
+                      />
+                    </svg>
+                  </div>
+                  <span className="text-sm font-medium text-zinc-300">
+                    Tambah Karyawan
+                  </span>
                 </Link>
+
                 <Link
                   href="/employee-list"
-                  className="rounded-lg bg-blue-500 px-4 py-2 text-sm font-medium text-white hover:bg-blue-600"
+                  className="flex flex-col items-center justify-center rounded-lg bg-black/30 p-4 transition-all hover:bg-black/50 hover:ring-1 hover:ring-yellow-500/40 group"
                 >
-                  Daftar Karyawan
+                  <div className="rounded-full bg-yellow-500/10 p-3 mb-2 group-hover:bg-yellow-500/20">
+                    <svg
+                      className="h-6 w-6 text-yellow-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+                      />
+                    </svg>
+                  </div>
+                  <span className="text-sm font-medium text-zinc-300">
+                    Daftar Karyawan
+                  </span>
                 </Link>
               </div>
             </div>
-            
+
             {/* Statistik Karyawan */}
             <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
               <div className="rounded-xl bg-black/30 p-4 ring-1 ring-yellow-500/10 min-w-[240px]">
-                <h3 className="text-sm font-medium text-yellow-400">Jumlah Karyawan</h3>
+                <h3 className="text-sm font-medium text-yellow-400">
+                  Jumlah Karyawan
+                </h3>
                 <div className="mt-2 flex items-baseline justify-between">
-                  <p className="text-2xl font-semibold text-white">{stats.totalKaryawan}</p>
+                  <p className="text-2xl font-semibold text-white">
+                    {stats.totalKaryawan}
+                  </p>
                   <div className="text-right">
                     <p className="text-xs text-zinc-400">Inhouse</p>
-                    <p className="text-sm font-medium text-yellow-400">{stats.inhouse}</p>
+                    <p className="text-sm font-medium text-yellow-400">
+                      {stats.inhouse}
+                    </p>
                   </div>
                   <div className="text-right">
                     <p className="text-xs text-zinc-400">Vendor (DW)</p>
-                    <p className="text-sm font-medium text-yellow-400">{stats.vendor}</p>
+                    <p className="text-sm font-medium text-yellow-400">
+                      {stats.vendor}
+                    </p>
                   </div>
                 </div>
               </div>
-              
+
               <div className="rounded-xl bg-black/30 p-4 ring-1 ring-yellow-500/10 min-w-[240px]">
                 <h3 className="text-sm font-medium text-emerald-400">Hadir</h3>
                 <div className="mt-2 flex items-baseline">
-                  <p className="text-2xl font-semibold text-white">{stats.hadir}</p>
+                  <p className="text-2xl font-semibold text-white">
+                    {stats.hadir}
+                  </p>
                   <p className="ml-2 text-sm text-zinc-400">
                     dari {stats.totalKaryawan} karyawan
                   </p>
                 </div>
                 <div className="mt-1 h-2 w-full rounded-full bg-black/50">
-                  <div 
-                    className="h-2 rounded-full bg-emerald-400/70" 
-                    style={{ width: `${(stats.hadir / stats.totalKaryawan) * 100}%` }}
+                  <div
+                    className="h-2 rounded-full bg-emerald-400/70"
+                    style={{
+                      width: `${(stats.hadir / stats.totalKaryawan) * 100}%`,
+                    }}
                   ></div>
                 </div>
               </div>
-              
+
               <div className="rounded-xl bg-black/30 p-4 ring-1 ring-yellow-500/10 min-w-[240px]">
                 <div className="flex justify-between">
                   <div>
                     <h3 className="text-sm font-medium text-red-400">Sakit</h3>
-                    <p className="text-xl font-semibold text-white">{stats.sakit}</p>
+                    <p className="text-xl font-semibold text-white">
+                      {stats.sakit}
+                    </p>
                   </div>
                   <div className="text-right">
                     <h3 className="text-sm font-medium text-blue-400">Cuti</h3>
-                    <p className="text-xl font-semibold text-white">{stats.cuti}</p>
+                    <p className="text-xl font-semibold text-white">
+                      {stats.cuti}
+                    </p>
                   </div>
                 </div>
                 <div className="mt-2 h-2 w-full rounded-full bg-black/50">
-                  <div 
-                    className="h-2 rounded-full bg-red-400/70" 
-                    style={{ width: `${(stats.sakit / stats.totalKaryawan) * 100}%` }}
+                  <div
+                    className="h-2 rounded-full bg-red-400/70"
+                    style={{
+                      width: `${(stats.sakit / stats.totalKaryawan) * 100}%`,
+                    }}
                   ></div>
                 </div>
                 <div className="mt-1 h-2 w-full rounded-full bg-black/50">
-                  <div 
-                    className="h-2 rounded-full bg-blue-400/70" 
-                    style={{ width: `${(stats.cuti / stats.totalKaryawan) * 100}%` }}
+                  <div
+                    className="h-2 rounded-full bg-blue-400/70"
+                    style={{
+                      width: `${(stats.cuti / stats.totalKaryawan) * 100}%`,
+                    }}
                   ></div>
                 </div>
               </div>
             </div>
           </div>
-
           {/* Table Card */}
           <div className="rounded-2xl bg-black/40 p-4 sm:p-6 shadow-xl ring-1 ring-yellow-500/20 backdrop-blur-lg">
+            <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
+              <div>
+                <label className="block text-sm font-medium text-zinc-400 mb-1">
+                  Nama Karyawan
+                </label>
+                <input
+                  type="text"
+                  value={filters.name}
+                  onChange={(e) =>
+                    setFilters({ ...filters, name: e.target.value })
+                  }
+                  className="w-full rounded-lg bg-black/30 px-3 py-2 text-sm text-white placeholder-zinc-500 ring-1 ring-yellow-500/20 focus:outline-none focus:ring-2 focus:ring-yellow-500/40"
+                  placeholder="Cari nama..."
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-zinc-400 mb-1">
+                  Tanggal Mulai
+                </label>
+                <DatePicker
+                  selected={filters.startDate}
+                  onChange={(date) =>
+                    setFilters({ ...filters, startDate: date })
+                  }
+                  selectsStart
+                  startDate={filters.startDate}
+                  endDate={filters.endDate}
+                  dateFormat="dd/MM/yyyy"
+                  placeholderText="Pilih tanggal mulai"
+                  className="w-full rounded-lg bg-black/30 px-3 py-2 text-sm text-white placeholder-zinc-500 ring-1 ring-yellow-500/20 focus:outline-none focus:ring-2 focus:ring-yellow-500/40"
+                  wrapperClassName="w-full"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-zinc-400 mb-1">
+                  Tanggal Akhir
+                </label>
+                <DatePicker
+                  selected={filters.endDate}
+                  onChange={(date) => setFilters({ ...filters, endDate: date })}
+                  selectsEnd
+                  startDate={filters.startDate}
+                  endDate={filters.endDate}
+                  minDate={filters.startDate || undefined}
+                  dateFormat="dd/MM/yyyy"
+                  placeholderText="Pilih tanggal akhir"
+                  className="w-full rounded-lg bg-black/30 px-3 py-2 text-sm text-white placeholder-zinc-500 ring-1 ring-yellow-500/20 focus:outline-none focus:ring-2 focus:ring-yellow-500/40"
+                  wrapperClassName="w-full"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-zinc-400 mb-1">
+                  Lokasi
+                </label>
+                <input
+                  type="text"
+                  value={filters.location}
+                  onChange={(e) =>
+                    setFilters({ ...filters, location: e.target.value })
+                  }
+                  className="w-full rounded-lg bg-black/30 px-3 py-2 text-sm text-white placeholder-zinc-500 ring-1 ring-yellow-500/20 focus:outline-none focus:ring-2 focus:ring-yellow-500/40"
+                  placeholder="Cari lokasi..."
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-zinc-400 mb-1">
+                  Status
+                </label>
+                <select
+                  value={filters.status}
+                  onChange={(e) =>
+                    setFilters({ ...filters, status: e.target.value })
+                  }
+                  className="w-full rounded-lg bg-black/30 px-3 py-2 text-sm text-white ring-1 ring-yellow-500/20 focus:outline-none focus:ring-2 focus:ring-yellow-500/40"
+                >
+                  <option value="">Semua Status</option>
+                  <option value="Hadir">Hadir</option>
+                  <option value="Sakit">Sakit</option>
+                  <option value="Cuti">Cuti</option>
+                </select>
+              </div>
+            </div>
             <DataTable
               columns={columns}
-              data={attendances}
+              data={filteredAttendances}
               onRowClick={(attendance) =>
                 setDetailModal({ isOpen: true, employee: attendance })
               }
