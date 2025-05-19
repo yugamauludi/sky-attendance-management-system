@@ -64,7 +64,7 @@ export default function EmployeeListPage() {
                 e.stopPropagation(); // Prevent row click event
                 openConfirmationModal(employee);
               }}
-              className="text-xs px-2 py-1 bg-red-500/10 text-red-400 rounded-lg hover:bg-red-500/20"
+              className="text-xs px-2 py-1 bg-red-500/10 text-red-400 rounded-lg hover:bg-red-500/20 cursor-pointer"
             >
               Hapus
             </button>
@@ -115,7 +115,7 @@ export default function EmployeeListPage() {
               </div>
               <button 
                 onClick={() => setSelectedEmployee(null)}
-                className="text-zinc-400 hover:text-white"
+                className="text-zinc-400 hover:text-white cursor-pointer"
               >
                 <svg
                   className="w-4 h-4 sm:w-5 sm:h-5"

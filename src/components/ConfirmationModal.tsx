@@ -17,13 +17,13 @@ export function ConfirmationModal({ isOpen, onConfirm, onCancel, message }: Conf
         <div className="flex justify-end space-x-2">
           <button 
             onClick={onCancel}
-            className="text-xs px-2 py-1 bg-zinc-500/10 text-zinc-400 rounded-lg hover:bg-zinc-500/20"
+            className="text-xs px-2 py-1 bg-zinc-500/10 text-zinc-400 rounded-lg hover:bg-zinc-500/20 cursor-pointer"
           >
             Batal
           </button>
           <button 
             onClick={onConfirm}
-            className="text-xs px-2 py-1 bg-red-500/10 text-red-400 rounded-lg hover:bg-red-500/20"
+            className="text-xs px-2 py-1 bg-red-500/10 text-red-400 rounded-lg hover:bg-red-500/20 cursor-pointer"
           >
             Hapus
           </button>

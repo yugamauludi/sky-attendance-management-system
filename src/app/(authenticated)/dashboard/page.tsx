@@ -254,14 +254,14 @@ export default function DashboardPage() {
               </h2>
               {attendance.status === "not_yet" ? (
                 <button
-                  className="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-black font-medium rounded-lg transition-colors"
+                  className="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-black font-medium rounded-lg transition-colors cursor-pointer"
                   onClick={handleCheckIn}
                 >
                   Check In
                 </button>
               ) : attendance.status === "present" && !attendance.checkOut ? (
                 <button
-                  className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white font-medium rounded-lg transition-colors"
+                  className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white font-medium rounded-lg transition-colors cursor-pointer"
                   onClick={() => setShowConfirmation(true)}
                 >
                   Check Out
@@ -402,13 +402,13 @@ export default function DashboardPage() {
                   }
                   setShowCamera(false);
                 }}
-                className="px-4 py-2 text-sm font-medium text-yellow-400 hover:bg-yellow-500/10 rounded-lg transition-colors"
+                className="px-4 py-2 text-sm font-medium text-yellow-400 hover:bg-yellow-500/10 rounded-lg transition-colors cursor-pointer"
               >
                 Batal
               </button>
               <button
                 onClick={handleCapturePhoto}
-                className="px-4 py-2 text-sm font-medium bg-yellow-500 text-black hover:bg-yellow-600 rounded-lg transition-colors"
+                className="px-4 py-2 text-sm font-medium bg-yellow-500 text-black hover:bg-yellow-600 rounded-lg transition-colors cursor-pointer"
               >
                 Ambil Foto & Check In
               </button>
@@ -430,7 +430,7 @@ export default function DashboardPage() {
             <div className="mt-6 flex justify-end space-x-4">
               <button
                 onClick={() => setShowConfirmation(false)}
-                className="px-4 py-2 text-sm font-medium text-yellow-400 hover:bg-yellow-500/10 rounded-lg transition-colors"
+                className="px-4 py-2 text-sm font-medium text-yellow-400 hover:bg-yellow-500/10 rounded-lg transition-colors cursor-pointer"
               >
                 Batal
               </button>
@@ -439,7 +439,7 @@ export default function DashboardPage() {
                   setShowConfirmation(false);
                   handleCheckOut();
                 }}
-                className="px-4 py-2 text-sm font-medium bg-red-500 text-white hover:bg-red-600 rounded-lg transition-colors"
+                className="px-4 py-2 text-sm font-medium bg-red-500 text-white hover:bg-red-600 rounded-lg transition-colors cursor-pointer"
               >
                 Ya, Check Out
               </button>

@@ -139,7 +139,7 @@ export default function LoginForm() {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 flex items-center pr-3"
+                  className="absolute inset-y-0 right-0 flex items-center pr-3 cursor-pointer"
                 >
                   {showPassword ? (
                     <Image
@@ -186,7 +186,7 @@ export default function LoginForm() {
 
             <button
               type="submit"
-              className="w-full transform rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 py-3 text-sm font-medium text-white transition-all hover:from-blue-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              className="w-full transform rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 py-3 text-sm font-medium text-white transition-all hover:from-blue-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 cursor-pointer"
             >
               Masuk
             </button>

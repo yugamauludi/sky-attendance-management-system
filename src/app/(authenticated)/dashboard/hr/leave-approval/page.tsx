@@ -135,19 +135,19 @@ export default function LeaveApprovalPage() {
                               setSelectedRequest(request);
                               setShowDetailModal(true);
                             }}
-                            className="rounded-lg bg-blue-500/10 px-2 py-1 text-xs font-medium text-blue-400 hover:bg-blue-500/20"
+                            className="rounded-lg bg-blue-500/10 px-2 py-1 text-xs font-medium text-blue-400 hover:bg-blue-500/20 cursor-pointer"
                           >
                             Detail
                           </button>
                           <button
                             onClick={() => handleApprove(request.id)}
-                            className="rounded-lg bg-emerald-500/10 px-2 py-1 text-xs font-medium text-emerald-400 hover:bg-emerald-500/20"
+                            className="rounded-lg bg-emerald-500/10 px-2 py-1 text-xs font-medium text-emerald-400 hover:bg-emerald-500/20 cursor-pointer"
                           >
                             Setujui
                           </button>
                           <button
                             onClick={() => handleReject(request.id)}
-                            className="rounded-lg bg-red-500/10 px-2 py-1 text-xs font-medium text-red-400 hover:bg-red-500/20"
+                            className="rounded-lg bg-red-500/10 px-2 py-1 text-xs font-medium text-red-400 hover:bg-red-500/20 cursor-pointer"
                           >
                             Tolak
                           </button>
@@ -172,7 +172,7 @@ export default function LeaveApprovalPage() {
               </h3>
               <button
                 onClick={() => setShowDetailModal(false)}
-                className="text-zinc-400 hover:text-white"
+                className="text-zinc-400 hover:text-white cursor-pointer"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -214,7 +214,7 @@ export default function LeaveApprovalPage() {
                     handleReject(selectedRequest.id);
                     setShowDetailModal(false);
                   }}
-                  className="rounded-lg bg-red-500 px-4 py-2 text-sm font-medium text-white hover:bg-red-600"
+                  className="rounded-lg bg-red-500 px-4 py-2 text-sm font-medium text-white hover:bg-red-600 cursor-pointer"
                 >
                   Tolak
                 </button>
@@ -223,7 +223,7 @@ export default function LeaveApprovalPage() {
                     handleApprove(selectedRequest.id);
                     setShowDetailModal(false);
                   }}
-                  className="rounded-lg bg-emerald-500 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-600"
+                  className="rounded-lg bg-emerald-500 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-600 cursor-pointer"
                 >
                   Setujui
                 </button>

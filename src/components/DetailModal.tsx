@@ -24,7 +24,7 @@ const DetailModal: React.FC<EmployeeDetail> = ({
             </h3>
             <p className="text-xs sm:text-sm text-zinc-400">Data lengkap absensi</p>
           </div>
-          <button onClick={onClose} className="text-zinc-400 hover:text-white">
+          <button onClick={onClose} className="text-zinc-400 hover:text-white cursor-pointer">
             <svg
               className="w-4 h-4 sm:w-5 sm:h-5"
               fill="none"

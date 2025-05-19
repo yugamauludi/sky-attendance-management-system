@@ -130,13 +130,13 @@ export default function ProfilePage() {
                   <>
                     <button
                       onClick={handleEdit}
-                      className="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-black font-medium rounded-lg transition-colors"
+                      className="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-black font-medium rounded-lg transition-colors cursor-pointer"
                     >
                       Edit Profil
                     </button>
                     <button
                       onClick={handleLogout}
-                      className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white font-medium rounded-lg transition-colors"
+                      className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white font-medium rounded-lg transition-colors cursor-pointer"
                     >
                       Logout
                     </button>
@@ -145,13 +145,13 @@ export default function ProfilePage() {
                   <>
                     <button
                       onClick={handleSave}
-                      className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white font-medium rounded-lg transition-colors"
+                      className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white font-medium rounded-lg transition-colors cursor-pointer"
                     >
                       Simpan
                     </button>
                     <button
                       onClick={handleCancel}
-                      className="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white font-medium rounded-lg transition-colors"
+                      className="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white font-medium rounded-lg transition-colors cursor-pointer"
                     >
                       Batal
                     </button>

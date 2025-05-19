@@ -166,7 +166,7 @@ export default function LeaveRequestPage() {
               <div className="flex justify-end">
                 <button
                   type="submit"
-                  className="rounded-lg bg-yellow-500 px-4 py-2 text-sm font-medium text-black hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2"
+                  className="rounded-lg bg-yellow-500 px-4 py-2 text-sm font-medium text-black hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 cursor-pointer"
                 >
                   Ajukan Cuti
                 </button>
