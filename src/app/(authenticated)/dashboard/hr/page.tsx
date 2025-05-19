@@ -156,12 +156,26 @@ export default function HRDashboardPage() {
                   Monitoring Kehadiran Karyawan
                 </p>
               </div>
-              <Link
-                href="/dashboard/hr/add"
-                className="rounded-lg bg-yellow-500 px-4 py-2 text-sm font-medium text-black hover:bg-yellow-600"
-              >
-                Tambah Karyawan
-              </Link>
+              <div className="flex space-x-2">
+                <Link
+                  href="/dashboard/hr/leave-approval"
+                  className="rounded-lg bg-yellow-500 px-4 py-2 text-sm font-medium text-black hover:bg-yellow-600"
+                >
+                  Approval Cuti
+                </Link>
+                <Link
+                  href="/dashboard/hr/add"
+                  className="rounded-lg bg-yellow-500 px-4 py-2 text-sm font-medium text-black hover:bg-yellow-600"
+                >
+                  Tambah Karyawan
+                </Link>
+                <Link
+                  href="/employee-list"
+                  className="rounded-lg bg-blue-500 px-4 py-2 text-sm font-medium text-white hover:bg-blue-600"
+                >
+                  Daftar Karyawan
+                </Link>
+              </div>
             </div>
             
             {/* Statistik Karyawan */}

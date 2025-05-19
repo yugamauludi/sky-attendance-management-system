@@ -1,10 +1,12 @@
 import React from 'react';
 
+
 interface ColumnConfig {
   key: string;
   label: string;
   className?: string;
   hiddenOnMobile?: boolean;
+  render?: (row: Employee) => React.ReactNode;
 }
 
 interface DataTableProps<T> {
@@ -12,6 +14,22 @@ interface DataTableProps<T> {
   data: T[];
   onRowClick?: (item: T) => void;
   renderCell: (item: T, columnKey: string) => React.ReactNode;
+}
+
+interface Employee {
+  id: string;
+  name: string;
+  gender: string;
+  idNumber: string;
+  birthPlace: string;
+  birthDate: string;
+  email: string;
+  address: string;
+  position: string;
+  department: string;
+  joinDate: string;
+  phoneNumber: string;
+  location: string;
 }
 
 export function DataTable<T>({ 
