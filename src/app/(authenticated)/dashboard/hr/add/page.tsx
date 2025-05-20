@@ -1,33 +1,56 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Fragment } from "react";
+import { Listbox, Transition } from "@headlessui/react";
+import { ChevronUpDownIcon, CheckIcon } from "@heroicons/react/20/solid";
 import Background from "@/components/Background";
 import { useRouter } from "next/navigation";
 import * as XLSX from 'xlsx';
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import { addEmployee } from "@/services/employees";
 
 interface NewEmployee {
-  name: string;
-  email: string;
-  position: string;
-  employeeType: "inhouse" | "vendor";
-  joinDate: string;
+  name?: string;
+  userName: string; // tetap required
+  password: string; // tetap required
+  email: string; // menjadi opsional
+  position?: string; // menjadi opsional
+  employeeType?: "inhouse" | "vendor"; // menjadi opsional
+  joinDate?: Date | null; // menjadi opsional
 }
+
+const employeeTypes = [
+  { id: 'inhouse', name: 'Inhouse' },
+  { id: 'vendor', name: 'Vendor (DW)' },
+];
 
 export default function AddEmployeePage() {
   const router = useRouter();
   const [employee, setEmployee] = useState<NewEmployee>({
     name: "",
+    userName: "",
+    password: "",
     email: "",
     position: "",
     employeeType: "inhouse",
-    joinDate: "",
+    joinDate: null,
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      // TODO: Implement API call to save employee data
-      console.log("Data karyawan baru:", employee);
+      await addEmployee({
+        Username: employee.userName,
+        Email: employee.email,
+        Password: employee.password,
+        RoleId: 1, // Sesuaikan dengan role yang diinginkan
+        // name: employee.name,
+        // position: employee.position,
+        // employeeType: employee.employeeType,
+        // joinDate: employee.joinDate ? employee.joinDate.toISOString().split('T')[0] : null,
+      });
+      
       router.push("/dashboard/hr");
     } catch (error) {
       console.error("Gagal menambahkan karyawan:", error);
@@ -65,6 +88,13 @@ export default function AddEmployeePage() {
     reader.readAsBinaryString(file);
   };
 
+  const handleDateChange = (date: Date | null) => {
+    setEmployee(prev => ({
+      ...prev,
+      joinDate: date
+    }));
+  };
+
   return (
     <div className="min-h-screen bg-[#1a1a1a]">
       <Background />
@@ -86,7 +116,7 @@ export default function AddEmployeePage() {
             <div className="mb-6">
               <h2 className="text-lg font-medium text-yellow-400 mb-2">Upload Data Karyawan (Bulk)</h2>
               <p className="text-sm text-zinc-400 mb-4">
-                Upload file Excel untuk menambahkan banyak karyawan sekaligus. Format kolom: Nama, Divisi, Lokasi
+                Upload file Excel untuk menambahkan banyak karyawan sekaligus. Format kolom: Nama, Divisi, Password
               </p>
               
               <div className="flex items-center justify-center w-full">
@@ -116,7 +146,6 @@ export default function AddEmployeePage() {
               </h2>
               
               <form onSubmit={handleSubmit} className="space-y-6">
-                {" "}
                 <div className="space-y-4">
                   <div>
                     <label
@@ -129,7 +158,6 @@ export default function AddEmployeePage() {
                       type="text"
                       id="name"
                       name="name"
-                      required
                       value={employee.name}
                       onChange={handleChange}
                       className="mt-1 block w-full rounded-lg border border-yellow-500/20 bg-black/20 px-4 py-2 text-white placeholder-zinc-400 focus:border-yellow-500 focus:outline-none focus:ring-1 focus:ring-yellow-500"
@@ -140,7 +168,7 @@ export default function AddEmployeePage() {
                   <div>
                     <label
                       htmlFor="email"
-                      className="block text-sm font-medium text-yellow-400"
+                      className="block text-sm font-medium text-yellow-400 after:content-['*'] after:ml-0.5 after:text-red-500"
                     >
                       Email
                     </label>
@@ -158,6 +186,44 @@ export default function AddEmployeePage() {
 
                   <div>
                     <label
+                      htmlFor="userName"
+                      className="block text-sm font-medium text-yellow-400 after:content-['*'] after:ml-0.5 after:text-red-500"
+                    >
+                      Username
+                    </label>
+                    <input
+                      type="text"
+                      id="userName"
+                      name="userName"
+                      required
+                      value={employee.userName}
+                      onChange={handleChange}
+                      className="mt-1 block w-full rounded-lg border border-yellow-500/20 bg-black/20 px-4 py-2 text-white placeholder-zinc-400 focus:border-yellow-500 focus:outline-none focus:ring-1 focus:ring-yellow-500"
+                      placeholder="Masukkan username untuk login SIO"
+                    />
+                  </div>
+
+                  <div>
+                    <label
+                      htmlFor="password"
+                      className="block text-sm font-medium text-yellow-400 after:content-['*'] after:ml-0.5 after:text-red-500"
+                    >
+                      Password
+                    </label>
+                    <input
+                      type="text"
+                      id="password"
+                      name="password"
+                      required
+                      value={employee.password}
+                      onChange={handleChange}
+                      className="mt-1 block w-full rounded-lg border border-yellow-500/20 bg-black/20 px-4 py-2 text-white placeholder-zinc-400 focus:border-yellow-500 focus:outline-none focus:ring-1 focus:ring-yellow-500"
+                      placeholder="Masukkan password untuk login SIO"
+                    />
+                  </div>
+
+                  <div>
+                    <label
                       htmlFor="position"
                       className="block text-sm font-medium text-yellow-400"
                     >
@@ -167,7 +233,6 @@ export default function AddEmployeePage() {
                       type="text"
                       id="position"
                       name="position"
-                      required
                       value={employee.position}
                       onChange={handleChange}
                       className="mt-1 block w-full rounded-lg border border-yellow-500/20 bg-black/20 px-4 py-2 text-white placeholder-zinc-400 focus:border-yellow-500 focus:outline-none focus:ring-1 focus:ring-yellow-500"
@@ -182,17 +247,54 @@ export default function AddEmployeePage() {
                     >
                       Tipe Karyawan
                     </label>
-                    <select
-                      id="employeeType"
-                      name="employeeType"
-                      required
-                      value={employee.employeeType}
-                      onChange={handleChange}
-                      className="mt-1 block w-full rounded-lg border border-yellow-500/20 bg-black/20 px-4 py-2 text-white focus:border-yellow-500 focus:outline-none focus:ring-1 focus:ring-yellow-500"
-                    >
-                      <option value="inhouse">Inhouse</option>
-                      <option value="vendor">Vendor (DW)</option>
-                    </select>
+                    <Listbox value={employee.employeeType} onChange={(value) => setEmployee(prev => ({ ...prev, employeeType: value }))}>
+                      <div className="relative mt-1">
+                        <Listbox.Button className="relative w-full cursor-pointer rounded-lg border border-yellow-500/20 bg-black/20 py-2 pl-3 pr-10 text-left text-white focus:border-yellow-500 focus:outline-none focus:ring-1 focus:ring-yellow-500">
+                          <span className="block truncate">
+                            {employeeTypes.find(type => type.id === employee.employeeType)?.name}
+                          </span>
+                          <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
+                            <ChevronUpDownIcon
+                              className="h-5 w-5 text-yellow-400"
+                              aria-hidden="true"
+                            />
+                          </span>
+                        </Listbox.Button>
+                        <Transition
+                          as={Fragment}
+                          leave="transition ease-in duration-100"
+                          leaveFrom="opacity-100"
+                          leaveTo="opacity-0"
+                        >
+                          <Listbox.Options className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-black/90 py-1 text-base shadow-lg ring-1 ring-yellow-500/20 focus:outline-none">
+                            {employeeTypes.map((type) => (
+                              <Listbox.Option
+                                key={type.id}
+                                className={({ active }) =>
+                                  `relative cursor-pointer select-none py-2 pl-10 pr-4 ${
+                                    active ? 'bg-yellow-500/10 text-yellow-400' : 'text-white'
+                                  }`
+                                }
+                                value={type.id}
+                              >
+                                {({ selected }) => (
+                                  <>
+                                    <span className={`block truncate ${selected ? 'font-medium text-yellow-400' : 'font-normal'}`}>
+                                      {type.name}
+                                    </span>
+                                    {selected ? (
+                                      <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-yellow-400">
+                                        <CheckIcon className="h-5 w-5" aria-hidden="true" />
+                                      </span>
+                                    ) : null}
+                                  </>
+                                )}
+                              </Listbox.Option>
+                            ))}
+                          </Listbox.Options>
+                        </Transition>
+                      </div>
+                    </Listbox>
                   </div>
 
                   <div>
@@ -202,14 +304,17 @@ export default function AddEmployeePage() {
                     >
                       Tanggal Bergabung
                     </label>
-                    <input
-                      type="date"
-                      id="joinDate"
-                      name="joinDate"
-                      required
-                      value={employee.joinDate}
-                      onChange={handleChange}
+                    <DatePicker
+                      selected={employee.joinDate}
+                      onChange={handleDateChange}
+                      dateFormat="dd/MM/yyyy"
                       className="mt-1 block w-full rounded-lg border border-yellow-500/20 bg-black/20 px-4 py-2 text-white focus:border-yellow-500 focus:outline-none focus:ring-1 focus:ring-yellow-500"
+                      placeholderText="Pilih tanggal"
+                      isClearable
+                      showYearDropdown
+                      scrollableYearDropdown
+                      yearDropdownItemNumber={15}
+                      wrapperClassName="w-full"
                     />
                   </div>
                 </div>

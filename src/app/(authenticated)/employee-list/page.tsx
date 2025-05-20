@@ -1,52 +1,61 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { DataTable } from "@/components/DataTable";
 import { ConfirmationModal } from "@/components/ConfirmationModal";
 import Background from "@/components/Background";
+import { deleteEmployee, getAllEmployees } from "@/services/employees";
+import { Employee } from "@/types/employee";
 
-interface Employee {
-  id: string;
-  name: string;
-  gender: string;
-  idNumber: string;
-  birthPlace: string;
-  birthDate: string;
-  email: string;
-  address: string;
-  position: string;
-  department: string;
-  joinDate: string;
-  phoneNumber: string;
-  location: string;
-}
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const mapApiEmployeeToEmployee = (apiEmployee: any): Employee => {
+  return {
+    id: apiEmployee.Id,
+    name: apiEmployee.Username,
+    email: apiEmployee.Email,
+    gender: '',
+    idNumber: '',
+    birthPlace: '',
+    birthDate: new Date().toISOString(),
+    address: '',
+    position: apiEmployee.role?.Name || '',
+    department: '',
+    joinDate: apiEmployee.CreatedAt,
+    phoneNumber: '',
+    location: ''
+  };
+};
 
 export default function EmployeeListPage() {
-  const [employees, setEmployees] = useState<Employee[]>([
-    {
-      id: "EMP-2024-001",
-      name: "Budi Santoso",
-      gender: "Laki-laki",
-      idNumber: "3171234567890001",
-      birthPlace: "Jakarta",
-      birthDate: "1990-05-15",
-      email: "budi@example.com",
-      address: "Jl. Contoh No. 123, Jakarta",
-      position: "Software Engineer",
-      department: "Engineering",
-      joinDate: "2022-01-01",
-      phoneNumber: "081234567890",
-      location: "Jakarta"
-    }
-  ]);
-
+  const [employees, setEmployees] = useState<Employee[]>([]);
+  
+  useEffect(() => {
+    const fetchEmployees = async () => {
+      try {
+        const apiEmployees = await getAllEmployees();
+        const mappedEmployees = apiEmployees.map(mapApiEmployeeToEmployee);
+        setEmployees(mappedEmployees);
+      } catch (error) {
+        console.error('Error fetching employees:', error);
+      }
+    };
+    
+    fetchEmployees();
+  }, []);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
   const [isConfirmationOpen, setIsConfirmationOpen] = useState(false);
   const [employeeToDelete, setEmployeeToDelete] = useState<Employee | null>(null);
 
-  const handleDelete = (id: string) => {
-    setEmployees(employees.filter(employee => employee.id !== id));
-    setIsConfirmationOpen(false);
+  const handleDelete = async (id: string) => {
+    try {
+      await deleteEmployee(id);
+      setEmployees(employees.filter(employee => employee.id !== id));
+      setIsConfirmationOpen(false);
+    } catch (error) {
+      console.error('Error deleting employee:', error);
+    }
   };
 
   const openConfirmationModal = (employee: Employee) => {
@@ -61,7 +70,7 @@ export default function EmployeeListPage() {
           <div className="flex space-x-2">
             <button
               onClick={(e) => {
-                e.stopPropagation(); // Prevent row click event
+                e.stopPropagation();
                 openConfirmationModal(employee);
               }}
               className="text-xs px-2 py-1 bg-red-500/10 text-red-400 rounded-lg hover:bg-red-500/20 cursor-pointer"
@@ -74,6 +83,43 @@ export default function EmployeeListPage() {
         return employee[key as keyof Employee] || "-";
     }
   };
+
+  useEffect(() => {
+    const fetchEmployees = async () => {
+      try {
+        setIsLoading(true);
+        const data = await getAllEmployees();
+        const mappedEmployees = data.map(mapApiEmployeeToEmployee);
+        setEmployees(mappedEmployees);
+        setError(null);
+      } catch (error) {
+        setError('Gagal memuat data karyawan');
+        console.error('Error fetching employees:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchEmployees();
+  }, []);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-[#1a1a1a] flex items-center justify-center">
+        <Background />
+        <div className="text-yellow-400">Memuat data...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-[#1a1a1a] flex items-center justify-center">
+        <Background />
+        <div className="text-red-400">{error}</div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#1a1a1a]">
@@ -92,7 +138,6 @@ export default function EmployeeListPage() {
                 { key: "name", label: "Nama" },
                 { key: "position", label: "Jabatan" },
                 { key: "department", label: "Departemen" },
-                { key: "location", label: "Lokasi" },
                 { key: "actions", label: "Aksi" },
               ]}
               data={employees}
@@ -193,10 +238,6 @@ export default function EmployeeListPage() {
                 <div>
                   <p className="text-xs text-zinc-400">Nomor Telepon</p>
                   <p className="text-sm text-white">{selectedEmployee.phoneNumber}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-zinc-400">Lokasi Kerja</p>
-                  <p className="text-sm text-white">{selectedEmployee.location}</p>
                 </div>
               </div>
             </div>

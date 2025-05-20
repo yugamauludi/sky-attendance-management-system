@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+// import { useRouter } from "next/navigation";
 import Background from "@/components/Background";
 import Image from "next/image";
+import { logout } from "@/services/auth";
 
 interface UserProfile {
   employeeId: string;
@@ -23,7 +24,7 @@ interface UserProfile {
 }
 
 export default function ProfilePage() {
-  const router = useRouter();
+  // const router = useRouter();
   const [isEditing, setIsEditing] = useState(false);
   const [profile, setProfile] = useState<UserProfile>({
     employeeId: "EMP-2024-001",
@@ -43,11 +44,12 @@ export default function ProfilePage() {
 
   const [editedProfile, setEditedProfile] = useState<UserProfile>(profile);
 
-  const handleLogout = () => {
-    document.cookie = "token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
-    document.cookie =
-      "userRole=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
-    router.replace("/login");
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } catch (error) {
+      console.error("Gagal logout:", error);
+    }
   };
 
   const handleEdit = () => {
@@ -393,19 +395,6 @@ export default function ProfilePage() {
                           />
                         </div>
                       </div>
-                      <div>
-                        <label className="block text-sm text-zinc-400 mb-1">
-                          Lokasi Kerja
-                        </label>
-                        <input
-                          type="text"
-                          name="workLocation"
-                          // value={editedProfile.workLocation}
-                          onChange={handleChange}
-                          className="w-full rounded-lg border border-yellow-500/20 bg-black/20 px-3 py-2 text-white opacity-75 cursor-not-allowed"
-                          disabled
-                        />
-                      </div>
                     </>
                   ) : (
                     // View Mode
@@ -476,10 +465,6 @@ export default function ProfilePage() {
                           <p className="text-sm text-zinc-400">Nomor Telepon</p>
                           <p className="text-white">{profile.phoneNumber}</p>
                         </div>
-                      </div>
-                      <div>
-                        <p className="text-sm text-zinc-400">Lokasi Kerja</p>
-                        <p className="text-white">{profile.workLocation}</p>
                       </div>
                     </>
                   )}
