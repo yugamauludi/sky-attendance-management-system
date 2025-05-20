@@ -1,15 +1,38 @@
-import { NextResponse } from 'next/server';
+import { NextResponse } from "next/server";
 import { signJWT } from '@/lib/jwt';
 
 export async function POST(request: Request) {
+  console.log('Processing login request...');
+  
+  if (!process.env.API_URL) {
+    console.error('API_URL tidak ditemukan di environment variables');
+    return NextResponse.json(
+      { message: "Konfigurasi server tidak valid" },
+      { status: 500 }
+    );
+  }
+
   try {
     const body = await request.json();
-    const { email, password } = body;
 
-    if (email === 'admin@example.com' && password === 'password') {
+    const apiUrl = `${process.env.API_URL}/v1/api/auth/login`;
+    const response = await fetch(apiUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json"
+      },
+      body: JSON.stringify(body),
+      cache: 'no-store'
+    });
+
+    const data = await response.json();
+    console.log('Response data:', data);
+    if(data.user.role === 2){
       const token = signJWT({
-        sub: '1',
-        email: email,
+        id: data.user.id,
+        sub: data.user.role,
+        email: data.user.username,
         role: 'hr',
       });
 
@@ -17,27 +40,40 @@ export async function POST(request: Request) {
         token,
         role: 'hr'
       });
-    } else if (email === 'employee@example.com' && password === 'password') {
+    } else if(data.user.role === 1){
       const token = signJWT({
-        sub: '2', // user id dari database
-        email: email,
-        role: 'employee', // role karyawan
+        id: data.user.id,
+        sub: data.user.role,
+        email: data.user.username,
+        role: 'employee',
       });
 
-      return NextResponse.json({ 
+      return NextResponse.json({
         token,
         role: 'employee'
       });
     }
 
-    return NextResponse.json(
-      { error: 'Email atau kata sandi salah' },
-      { status: 401 }
-    );
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    if (!response.ok) {
+      return NextResponse.json(
+        { message: data.message || "Login gagal" },
+        { status: response.status }
+      );
+    }
+
+    return NextResponse.json(data);
   } catch (error) {
+    console.error('Error detail:', error);
+    
+    if (error instanceof Error) {
+      return NextResponse.json(
+        { message: error.message },
+        { status: 500 }
+      );
+    }
+
     return NextResponse.json(
-      { error: 'Terjadi kesalahan server' },
+      { message: "Terjadi kesalahan server" },
       { status: 500 }
     );
   }
