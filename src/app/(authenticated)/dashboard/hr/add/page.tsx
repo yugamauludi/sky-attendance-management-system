@@ -160,7 +160,7 @@ export default function AddEmployeePage() {
                       name="name"
                       value={employee.name}
                       onChange={handleChange}
-                      className="mt-1 block w-full rounded-lg border border-yellow-500/20 bg-black/20 px-4 py-2 text-white placeholder-zinc-400 focus:border-yellow-500 focus:outline-none focus:ring-1 focus:ring-yellow-500"
+                      className="mt-1 block w-full rounded-lg border border-yellow-500/20 bg-black/20 px-4 py-2 text-white placeholder-zinc-400 focus:border-yellow-500 focus:outline-none focus:ring-1 focus:ring-yellow-500 autofill-style"
                       placeholder="Masukkan nama lengkap"
                     />
                   </div>
@@ -179,7 +179,7 @@ export default function AddEmployeePage() {
                       required
                       value={employee.email}
                       onChange={handleChange}
-                      className="mt-1 block w-full rounded-lg border border-yellow-500/20 bg-black/20 px-4 py-2 text-white placeholder-zinc-400 focus:border-yellow-500 focus:outline-none focus:ring-1 focus:ring-yellow-500"
+                      className="mt-1 block w-full rounded-lg border border-yellow-500/20 bg-black/20 px-4 py-2 text-white placeholder-zinc-400 focus:border-yellow-500 focus:outline-none focus:ring-1 focus:ring-yellow-500 autofill-style"
                       placeholder="contoh@email.com"
                     />
                   </div>
@@ -198,7 +198,7 @@ export default function AddEmployeePage() {
                       required
                       value={employee.userName}
                       onChange={handleChange}
-                      className="mt-1 block w-full rounded-lg border border-yellow-500/20 bg-black/20 px-4 py-2 text-white placeholder-zinc-400 focus:border-yellow-500 focus:outline-none focus:ring-1 focus:ring-yellow-500"
+                      className="mt-1 block w-full rounded-lg border border-yellow-500/20 bg-black/20 px-4 py-2 text-white placeholder-zinc-400 focus:border-yellow-500 focus:outline-none focus:ring-1 focus:ring-yellow-500 autofill-style"
                       placeholder="Masukkan username untuk login SIO"
                     />
                   </div>
@@ -217,7 +217,7 @@ export default function AddEmployeePage() {
                       required
                       value={employee.password}
                       onChange={handleChange}
-                      className="mt-1 block w-full rounded-lg border border-yellow-500/20 bg-black/20 px-4 py-2 text-white placeholder-zinc-400 focus:border-yellow-500 focus:outline-none focus:ring-1 focus:ring-yellow-500"
+                      className="mt-1 block w-full rounded-lg border border-yellow-500/20 bg-black/20 px-4 py-2 text-white placeholder-zinc-400 focus:border-yellow-500 focus:outline-none focus:ring-1 focus:ring-yellow-500 autofill-style"
                       placeholder="Masukkan password untuk login SIO"
                     />
                   </div>
@@ -235,7 +235,7 @@ export default function AddEmployeePage() {
                       name="position"
                       value={employee.position}
                       onChange={handleChange}
-                      className="mt-1 block w-full rounded-lg border border-yellow-500/20 bg-black/20 px-4 py-2 text-white placeholder-zinc-400 focus:border-yellow-500 focus:outline-none focus:ring-1 focus:ring-yellow-500"
+                      className="mt-1 block w-full rounded-lg border border-yellow-500/20 bg-black/20 px-4 py-2 text-white placeholder-zinc-400 focus:border-yellow-500 focus:outline-none focus:ring-1 focus:ring-yellow-500 autofill-style"
                       placeholder="Masukkan jabatan"
                     />
                   </div>

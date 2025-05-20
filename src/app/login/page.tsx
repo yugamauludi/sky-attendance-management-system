@@ -105,7 +105,7 @@ export default function LoginPage() {
                   name="identifier"
                   type="text"
                   required
-                  className="peer w-full rounded-lg border border-yellow-500/20 bg-black/20 pl-10 pr-4 py-3 outline-none transition-all focus:border-yellow-500 text-yellow-400 placeholder-zinc-400 [&:-webkit-autofill]:bg-black/20 [&:-webkit-autofill]:text-yellow-400 [&:-webkit-autofill]:[-webkit-text-fill-color:rgb(250_204_21)] [&:-webkit-autofill]:[transition:background-color_9999s_ease-in-out_0s]"
+                  className="peer w-full rounded-lg border border-yellow-500/20 bg-black/20 pl-10 pr-4 py-3 outline-none transition-all focus:border-yellow-500 text-yellow-400 placeholder-zinc-400 autofill-style"
                   placeholder=""
                   value={credentials.identifier}
                   onChange={handleChange}
@@ -133,7 +133,7 @@ export default function LoginPage() {
                   name="password"
                   type={showPassword ? "text" : "password"}
                   required
-                  className="peer w-full rounded-lg border border-yellow-500/20 bg-black/20 pl-10 pr-10 py-3 outline-none transition-all focus:border-yellow-500 text-yellow-400 placeholder-zinc-400 [&:-webkit-autofill]:bg-black/20 [&:-webkit-autofill]:text-yellow-400 [&:-webkit-autofill]:[-webkit-text-fill-color:rgb(250_204_21)] [&:-webkit-autofill]:[transition:background-color_9999s_ease-in-out_0s]"
+                  className="peer w-full rounded-lg border border-yellow-500/20 bg-black/20 pl-10 pr-10 py-3 outline-none transition-all focus:border-yellow-500 text-yellow-400 placeholder-zinc-400 autofill-style"
                   placeholder=""
                   value={credentials.password}
                   onChange={handleChange}

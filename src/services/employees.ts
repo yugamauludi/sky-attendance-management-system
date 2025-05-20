@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { getSignature } from "./signature";
+import { getSignature, getSignatureAddUser } from "./signature";
 
 interface Role {
   Name: string;
@@ -69,7 +69,6 @@ export const getAllEmployees = async (): Promise<Employee[]> => {
   }
 };
 
-
 export const deleteEmployee = async (id: string): Promise<void> => {
   try {
     // Dapatkan signature terlebih dahulu
@@ -94,11 +93,12 @@ export const deleteEmployee = async (id: string): Promise<void> => {
   }
 };
 
-
 export const addEmployee = async (employeeData: any) => {
   try {
+    console.log(employeeData, "<<<<employeeData");
+    
     // Dapatkan signature terlebih dahulu
-    const { timestamp, signature } = await getSignature();
+    const { timestamp, signature } = await getSignatureAddUser(employeeData);
 
     const response = await fetch('/api/users/create', {
       method: 'POST',

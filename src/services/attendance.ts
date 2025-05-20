@@ -31,11 +31,6 @@ export const getAllAttendance = async (): Promise<AttendanceData[]> => {
         // Dapatkan signature terlebih dahulu
         const { timestamp, signature } = await getSignature();
 
-        console.log('Signature diterima:', {
-            timestamp,
-            signature
-        });
-
         const response = await fetch('/api/attendance/get-all', {
             method: 'GET',
             headers: {
