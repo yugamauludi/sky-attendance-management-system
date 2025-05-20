@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useEffect, useState } from "react";
@@ -7,9 +8,11 @@ import Background from "@/components/Background";
 import Link from "next/link";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import { getAllAttendance } from "@/services/attendance";
 
 export interface EmployeeAttendance {
   id: string;
+  userId: string;
   name: string;
   location: string;
   date: string;
@@ -17,6 +20,8 @@ export interface EmployeeAttendance {
   checkOut: string;
   duration: string;
   status: string;
+  pathIn: string;
+  pathOut: string;
   notes?: string;
 }
 
@@ -25,8 +30,39 @@ interface EmployeeDetail {
   employee: EmployeeAttendance | null;
 }
 
+const mapApiEmployeeToEmployee = (apiAttendance: any): EmployeeAttendance => {
+  return {
+    id: apiAttendance.Id,
+    userId: apiAttendance.UserId,
+    name: apiAttendance.UserId,
+    location: apiAttendance.LocationName + " - " + apiAttendance.Address,
+    date: apiAttendance.Date,
+    checkIn: apiAttendance.InTime,
+    checkOut: apiAttendance.OutTime,
+    duration: apiAttendance.Duration,
+    status: apiAttendance.Status,
+    pathIn: apiAttendance.PathIn,
+    pathOut: apiAttendance.PathOut,
+    notes: apiAttendance.Description
+  };
+};
+
 export default function HRDashboardPage() {
   const [attendances, setAttendances] = useState<EmployeeAttendance[]>([]);
+  useEffect(() => {
+    const fetchAttendances = async () => {
+      try {
+        const apiEmployees = await getAllAttendance();
+        const mappedEmployees = apiEmployees.map(mapApiEmployeeToEmployee);
+        setAttendances(mappedEmployees);
+      } catch (error) {
+        console.error("Error fetching employees:", error);
+      }
+    };
+
+    fetchAttendances();
+  }, []);
+
   const [filteredAttendances, setFilteredAttendances] = useState<
     EmployeeAttendance[]
   >([]);
@@ -64,11 +100,11 @@ export default function HRDashboardPage() {
         // Set waktu ke 00:00:00 untuk startDate
         const startDate = new Date(filters.startDate);
         startDate.setHours(0, 0, 0, 0);
-        
+
         // Set waktu ke 23:59:59 untuk endDate
         const endDate = new Date(filters.endDate);
         endDate.setHours(23, 59, 59, 999);
-        
+
         matchDate = attendanceDate >= startDate && attendanceDate <= endDate;
       }
 
@@ -77,7 +113,6 @@ export default function HRDashboardPage() {
 
     setFilteredAttendances(filtered);
   }, [attendances, filters]);
-
 
   const columns = [
     { key: "name", label: "Nama Karyawan" },
@@ -110,6 +145,30 @@ export default function HRDashboardPage() {
           month: "long",
           day: "numeric",
         });
+      case "checkIn":
+        return `${new Date(attendance.checkIn).toLocaleDateString("id-ID", {
+          weekday: "long",
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        })} ${new Date(attendance.checkIn).toLocaleTimeString("id-ID", {
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+          hour12: true,
+        })}`;
+      case "checkOut":
+        return `${new Date(attendance.checkOut).toLocaleDateString("id-ID", {
+          weekday: "long",
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        })} ${new Date(attendance.checkOut).toLocaleTimeString("id-ID", {
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+          hour12: true,
+        })}`;
       case "status":
         return (
           <span
@@ -136,41 +195,7 @@ export default function HRDashboardPage() {
   useEffect(() => {
     // TODO: Fetch data dari API
     // Data dummy untuk tampilan
-    setAttendances([
-      {
-        id: "1",
-        name: "Budi Santoso",
-        location:
-          "Karawaci Office Park Blok H no 20, Jl. Imam Bonjol Lippo, RT.001/RW.009, Karawaci, Tangerang City, Banten 15115",
-        date: "2025-03-15",
-        checkIn: "08:00",
-        checkOut: "17:00",
-        duration: "9 jam",
-        status: "Hadir",
-      },
-      {
-        id: "2",
-        name: "Ani Wijaya",
-        location: "Bandung",
-        date: "2025-05-15",
-        checkIn: "-",
-        checkOut: "-",
-        duration: "-",
-        status: "Cuti",
-        notes: "Cuti Tahunan",
-      },
-      {
-        id: "3",
-        name: "Dedi Kurniawan",
-        location: "Surabaya",
-        date: "2024-04-15",
-        checkIn: "-",
-        checkOut: "-",
-        duration: "-",
-        status: "Sakit",
-        notes: "Izin Sakit dengan Surat Dokter",
-      },
-    ]);
+    setAttendances([]);
 
     // Set statistik dummy
     setStats({

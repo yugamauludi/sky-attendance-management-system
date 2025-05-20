@@ -30,9 +30,7 @@ interface EmployeeResponse {
 
 
 export const getAllEmployees = async (): Promise<Employee[]> => {
-  try {
-    console.log('Memulai fetch employees...');
-    
+  try {    
     // Dapatkan signature terlebih dahulu
     const { timestamp, signature } = await getSignature();
     
