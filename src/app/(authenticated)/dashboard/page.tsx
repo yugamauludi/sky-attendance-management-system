@@ -22,7 +22,9 @@ const Popup = dynamic(() => import("react-leaflet").then((mod) => mod.Popup), {
 });
 
 import Modal from "@/components/Modal";
-import Link from "next/link";
+// import Link from "next/link";
+import toast from "react-hot-toast";
+import { checkInAttendance, checkOutAttendance } from "@/services/attendance";
 
 interface AttendanceStatus {
   status: "present" | "absent" | "not_yet";
@@ -43,13 +45,15 @@ export default function DashboardPage() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [showCamera, setShowCamera] = useState(false);
   const [position, setPosition] = useState<GeolocationPosition | null>(null);
-  const [photo, setPhoto] = useState<string | null>(null);
+  // const [photo, setPhoto] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalMessage, setModalMessage] = useState("");
   const [showConfirmation, setShowConfirmation] = useState(false);
+  const [isCheckingIn, setIsCheckingIn] = useState(false);
 
   const handleCheckIn = async () => {
     try {
+      setIsCheckingIn(true);
       // Dapatkan lokasi saat ini
       const currentPosition = await new Promise<GeolocationPosition>(
         (resolve, reject) => {
@@ -57,8 +61,6 @@ export default function DashboardPage() {
         }
       );
       setPosition(currentPosition);
-
-      // Aktifkan kamera
       setShowCamera(true);
       const stream = await navigator.mediaDevices.getUserMedia({
         video: {
@@ -67,15 +69,14 @@ export default function DashboardPage() {
           facingMode: "user",
         },
       });
-
+  
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
-        // Pastikan video dimuat sebelum diplay
         await videoRef.current.play();
       }
     } catch (error) {
       console.error("Error during check-in:", error);
-      // TODO: Tampilkan pesan error ke user
+      toast.error("Gagal mengakses kamera atau lokasi");
     }
   };
 
@@ -88,20 +89,54 @@ export default function DashboardPage() {
         }
       );
 
-      // Hitung durasi kerja dengan benar
-      const today = new Date().toISOString().split("T")[0]; // Ambil tanggal hari ini
+      setPosition(currentPosition);
+      setShowCamera(true);
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: {
+          width: { ideal: 1280 },
+          height: { ideal: 720 },
+          facingMode: "user",
+        },
+      });
+
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        await videoRef.current.play();
+      }
+    } catch (error) {
+      console.error("Error during check-out:", error);
+      toast.error("Gagal mengakses kamera atau lokasi");
+    }
+  };
+
+  const handleCaptureCheckOutPhoto = async () => {
+    try {
+      if (!position || !videoRef.current) return;
+
+      // Ambil foto
+      const canvas = document.createElement("canvas");
+      canvas.width = videoRef.current.videoWidth;
+      canvas.height = videoRef.current.videoHeight;
+      canvas.getContext("2d")?.drawImage(videoRef.current, 0, 0);
+      const blob = await new Promise<Blob>((resolve) => {
+        canvas.toBlob((blob) => {
+          if (blob) resolve(blob);
+        }, 'image/jpeg', 0.95);
+      });
+
+      // Buat file dari blob
+      const photoFile = new File([blob], 'check-out-photo.jpg', { type: 'image/jpeg' });
+
+      // Hitung durasi kerja
+      const today = new Date().toISOString().split("T")[0];
       const checkInTime = new Date(`${today} ${attendance.checkIn}`);
       const checkOutTime = new Date();
-
-      // Hitung selisih dalam milidetik
       let durationMs = checkOutTime.getTime() - checkInTime.getTime();
 
-      // Jika durasi negatif (karena pergantian hari), tambahkan 24 jam
       if (durationMs < 0) {
         durationMs += 24 * 60 * 60 * 1000;
       }
 
-      // Hitung jam, menit, detik
       const hours = Math.floor(durationMs / (1000 * 60 * 60));
       const minutes = Math.floor((durationMs % (1000 * 60 * 60)) / (1000 * 60));
       const seconds = Math.floor((durationMs % (1000 * 60)) / 1000);
@@ -110,44 +145,52 @@ export default function DashboardPage() {
         .padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
 
       // Kirim data check-out ke API
-      const checkOutData = {
-        timestamp: new Date().toISOString(),
-        location: {
-          latitude: currentPosition.coords.latitude,
-          longitude: currentPosition.coords.longitude,
-          address: "Akan diisi dari hasil geocoding",
-        },
-      };
-      console.log("THIS IS CHECKOUT DATA:", checkOutData);
+      const response = await checkOutAttendance({
+        latitude: position.coords.latitude.toString(),
+        longitude: position.coords.longitude.toString(),
+        photo: photoFile
+      });
 
-      // Update state setelah check-out berhasil
-      setAttendance((prev) => ({
-        ...prev,
-        checkOut: new Date()
-          .toLocaleTimeString("id-ID", {
-            hour: "2-digit",
-            minute: "2-digit",
-            second: "2-digit",
-            hour12: false,
-          })
-          .replace(/\./g, ":"),
-        duration: durationStr,
-        location: {
-          ...prev.location!,
-          latitude: currentPosition.coords.latitude,
-          longitude: currentPosition.coords.longitude,
-          address: "Akan diisi dari hasil geocoding",
-        },
-      }));
+      if (response.code === 210002) {
+        // Update state setelah check-out berhasil
+        setAttendance((prev) => ({
+          ...prev,
+          checkOut: new Date()
+            .toLocaleTimeString("id-ID", {
+              hour: "2-digit",
+              minute: "2-digit",
+              second: "2-digit",
+              hour12: false,
+            })
+            .replace(/\./g, ":"),
+          duration: durationStr,
+          location: {
+            ...prev.location!,
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+            address: "Akan diisi dari hasil geocoding",
+          },
+        }));
 
-      // Set pesan modal setelah check-out berhasil
-      setModalMessage(
-        "Terima kasih atas kerja keras Anda hari ini! Anda telah berhasil check-out."
-      );
-      setIsModalOpen(true);
+        // Set pesan modal setelah check-out berhasil
+        setModalMessage(
+          "Terima kasih atas kerja keras Anda hari ini! Anda telah berhasil check-out."
+        );
+        setIsModalOpen(true);
+        toast.success("Berhasil melakukan check-out");
+      }
+
+      // Matikan kamera
+      if (videoRef.current?.srcObject) {
+        const tracks = (videoRef.current.srcObject as MediaStream).getTracks();
+        tracks.forEach((track) => track.stop());
+      }
+      setShowCamera(false);
     } catch (error) {
-      console.error("Error during check-out:", error);
-      // TODO: Tampilkan pesan error ke user
+      console.error("Error during check-out photo capture:", error);
+      toast.error("Gagal melakukan check-out");
+      setModalMessage("Gagal melakukan check-out. Silakan coba lagi.");
+      setIsModalOpen(true);
     }
   };
 
@@ -160,43 +203,47 @@ export default function DashboardPage() {
       canvas.width = videoRef.current.videoWidth;
       canvas.height = videoRef.current.videoHeight;
       canvas.getContext("2d")?.drawImage(videoRef.current, 0, 0);
-      const photoData = canvas.toDataURL("image/jpeg");
-      setPhoto(photoData);
+      const blob = await new Promise<Blob>((resolve) => {
+        canvas.toBlob((blob) => {
+          if (blob) resolve(blob);
+        }, 'image/jpeg', 0.95);
+      });
+
+      // Buat file dari blob
+      const photoFile = new File([blob], 'check-in-photo.jpg', { type: 'image/jpeg' });
 
       // Kirim data check-in ke API
-      const checkInData = {
-        timestamp: new Date().toISOString(),
-        location: {
-          latitude: position.coords.latitude,
-          longitude: position.coords.longitude,
-          address: "Akan diisi dari hasil geocoding",
-        },
-        photo: photo,
-      };
-      console.log("THIS IS CHECKIN DATA:", checkInData);
+      const response = await checkInAttendance({
+        latitude: position.coords.latitude.toString(),
+        longitude: position.coords.longitude.toString(),
+        photo: photoFile
+      });
 
-      // Update state setelah check-in berhasil
-      setAttendance((prev) => ({
-        ...prev,
-        status: "present",
-        checkIn: new Date()
-          .toLocaleTimeString("id-ID", {
-            hour: "2-digit",
-            minute: "2-digit",
-            second: "2-digit",
-            hour12: false,
-          })
-          .replace(/\./g, ":"),
-        location: {
-          latitude: position.coords.latitude,
-          longitude: position.coords.longitude,
-          address: "Akan diisi dari hasil geocoding",
-        },
-      }));
+      if (response.code === 210002) {
+        // Update state setelah check-in berhasil
+        setAttendance((prev) => ({
+          ...prev,
+          status: "present",
+          checkIn: new Date()
+            .toLocaleTimeString("id-ID", {
+              hour: "2-digit",
+              minute: "2-digit",
+              second: "2-digit",
+              hour12: false,
+            })
+            .replace(/\./g, ":"),
+          location: {
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+            address: "Akan diisi dari hasil geocoding",
+          },
+        }));
 
-      // Set pesan modal setelah check-in berhasil
-      setModalMessage("Selamat bekerja! Anda telah berhasil check-in.");
-      setIsModalOpen(true);
+        // Set pesan modal setelah check-in berhasil
+        setModalMessage("Selamat bekerja! Anda telah berhasil check-in.");
+        setIsModalOpen(true);
+        toast.success("Berhasil melakukan check-in");
+      }
 
       // Matikan kamera
       if (videoRef.current?.srcObject) {
@@ -206,9 +253,14 @@ export default function DashboardPage() {
       setShowCamera(false);
     } catch (error) {
       console.error("Error during photo capture:", error);
-      // TODO: Tampilkan pesan error ke user
+      toast.error("Gagal melakukan check-in");
+      setModalMessage("Gagal melakukan check-in. Silakan coba lagi.");
+      setIsModalOpen(true);
     }
   };
+
+  console.log(attendance, "<<<<ini attendance");
+  
 
   return (
     <div className="min-h-screen bg-[#1a1a1a]">
@@ -252,21 +304,23 @@ export default function DashboardPage() {
               <h2 className="text-xl font-semibold text-yellow-400">
                 Status Kehadiran
               </h2>
-              {attendance.status === "not_yet" ? (
+              <div className="flex space-x-4">
                 <button
-                  className="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-black font-medium rounded-lg transition-colors cursor-pointer"
+                  className="px-4 py-2 font-medium rounded-lg transition-colors cursor-pointer bg-yellow-500 hover:bg-yellow-600 text-black"
                   onClick={handleCheckIn}
                 >
                   Check In
                 </button>
-              ) : attendance.status === "present" && !attendance.checkOut ? (
                 <button
-                  className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white font-medium rounded-lg transition-colors cursor-pointer"
-                  onClick={() => setShowConfirmation(true)}
+                  className="px-4 py-2 font-medium rounded-lg transition-colors cursor-pointer bg-red-500 hover:bg-red-600 text-white"
+                  onClick={() => {
+                    setShowConfirmation(true)
+                    setIsCheckingIn(false)
+                  }}
                 >
                   Check Out
                 </button>
-              ) : null}
+              </div>
             </div>
 
             <div className="mt-6 grid gap-6 md:grid-cols-2">
@@ -354,7 +408,7 @@ export default function DashboardPage() {
           </div>
 
           {/* Card Pengajuan Cuti */}
-          <div className="rounded-2xl bg-black/40 p-6 shadow-xl ring-1 ring-yellow-500/20 backdrop-blur-lg">
+          {/* <div className="rounded-2xl bg-black/40 p-6 shadow-xl ring-1 ring-yellow-500/20 backdrop-blur-lg">
             <div className="flex items-center justify-between mb-6">
               <div>
                 <h2 className="text-xl font-semibold text-yellow-400">
@@ -371,7 +425,7 @@ export default function DashboardPage() {
                 Ajukan Cuti
               </Link>
             </div>
-          </div>
+          </div> */}
         </div>
       </div>
       {/* Camera Modal */}
@@ -407,10 +461,10 @@ export default function DashboardPage() {
                 Batal
               </button>
               <button
-                onClick={handleCapturePhoto}
+                onClick={isCheckingIn ? handleCapturePhoto : handleCaptureCheckOutPhoto}
                 className="px-4 py-2 text-sm font-medium bg-yellow-500 text-black hover:bg-yellow-600 rounded-lg transition-colors cursor-pointer"
               >
-                Ambil Foto & Check In
+                {!isCheckingIn ? "Ambil Foto & Check Out" : "Ambil Foto & Check In"}
               </button>
             </div>
           </div>

@@ -19,7 +19,6 @@ export const getSignature = async (): Promise<SignatureResponse> => {
     }
 
     const data = await response.json();
-    console.log(data, "<<<ini data");
     return {
       timestamp: data.signature.timestamp,
       signature: data.signature.signature

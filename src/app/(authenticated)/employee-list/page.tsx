@@ -6,6 +6,7 @@ import { ConfirmationModal } from "@/components/ConfirmationModal";
 import Background from "@/components/Background";
 import { deleteEmployee, getAllEmployees } from "@/services/employees";
 import { Employee } from "@/types/employee";
+import { toast } from "react-hot-toast";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const mapApiEmployeeToEmployee = (apiEmployee: any): Employee => {
@@ -53,8 +54,10 @@ export default function EmployeeListPage() {
       await deleteEmployee(id);
       setEmployees(employees.filter(employee => employee.id !== id));
       setIsConfirmationOpen(false);
+      toast.success("Data karyawan berhasil dihapus");
     } catch (error) {
       console.error('Error deleting employee:', error);
+      toast.error("Gagal menghapus data karyawan");
     }
   };
 

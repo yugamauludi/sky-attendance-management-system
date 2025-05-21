@@ -43,7 +43,7 @@ const mapApiEmployeeToEmployee = (apiAttendance: any): EmployeeAttendance => {
     status: apiAttendance.Status,
     pathIn: apiAttendance.PathIn,
     pathOut: apiAttendance.PathOut,
-    notes: apiAttendance.Description
+    notes: apiAttendance.Description,
   };
 };
 
@@ -62,6 +62,7 @@ export default function HRDashboardPage() {
 
     fetchAttendances();
   }, []);
+  console.log(attendances, "<<<<ini attendance nya nih");
 
   const [filteredAttendances, setFilteredAttendances] = useState<
     EmployeeAttendance[]
@@ -146,29 +147,45 @@ export default function HRDashboardPage() {
           day: "numeric",
         });
       case "checkIn":
-        return `${new Date(attendance.checkIn).toLocaleDateString("id-ID", {
-          weekday: "long",
-          year: "numeric",
+        if (!attendance.checkIn) return "-";
+
+        const checkInDate = new Date(attendance.checkIn);
+        const dayIn = String(checkInDate.getUTCDate()).padStart(2, "0");
+        const monthIn = checkInDate.toLocaleString("id-ID", {
           month: "long",
-          day: "numeric",
-        })} ${new Date(attendance.checkIn).toLocaleTimeString("id-ID", {
-          hour: "2-digit",
-          minute: "2-digit",
-          second: "2-digit",
-          hour12: true,
-        })}`;
+          timeZone: "UTC",
+        });
+        const yearIn = checkInDate.getUTCFullYear();
+        const weekdayIn = checkInDate.toLocaleString("id-ID", {
+          weekday: "long",
+          timeZone: "UTC",
+        });
+
+        const hoursIn = String(checkInDate.getUTCHours()).padStart(2, "0");
+        const minutesIn = String(checkInDate.getUTCMinutes()).padStart(2, "0");
+        const secondsIn = String(checkInDate.getUTCSeconds()).padStart(2, "0");
+
+        return `${weekdayIn}, ${dayIn} ${monthIn} ${yearIn} ${hoursIn}.${minutesIn}.${secondsIn}`;
       case "checkOut":
-        return `${new Date(attendance.checkOut).toLocaleDateString("id-ID", {
-          weekday: "long",
-          year: "numeric",
+        if (!attendance.checkOut) return "-";
+
+        const checkOutDate = new Date(attendance.checkOut);
+        const day = String(checkOutDate.getUTCDate()).padStart(2, "0");
+        const month = checkOutDate.toLocaleString("id-ID", {
           month: "long",
-          day: "numeric",
-        })} ${new Date(attendance.checkOut).toLocaleTimeString("id-ID", {
-          hour: "2-digit",
-          minute: "2-digit",
-          second: "2-digit",
-          hour12: true,
-        })}`;
+          timeZone: "UTC",
+        });
+        const year = checkOutDate.getUTCFullYear();
+        const weekday = checkOutDate.toLocaleString("id-ID", {
+          weekday: "long",
+          timeZone: "UTC",
+        });
+
+        const hours = String(checkOutDate.getUTCHours()).padStart(2, "0");
+        const minutes = String(checkOutDate.getUTCMinutes()).padStart(2, "0");
+        const seconds = String(checkOutDate.getUTCSeconds()).padStart(2, "0");
+
+        return `${weekday}, ${day} ${month} ${year} ${hours}.${minutes}.${seconds}`;
       case "status":
         return (
           <span
@@ -237,7 +254,7 @@ export default function HRDashboardPage() {
                 Quick Actions
               </h3>
               <div className="flex space-x-4">
-                <Link
+                {/* <Link
                   href="/dashboard/hr/leave-approval"
                   className="flex flex-col items-center justify-center rounded-lg bg-black/30 p-4 transition-all hover:bg-black/50 hover:ring-1 hover:ring-yellow-500/40 relative group"
                 >
@@ -264,7 +281,7 @@ export default function HRDashboardPage() {
                       {stats.cuti}
                     </span>
                   )}
-                </Link>
+                </Link> */}
 
                 <Link
                   href="/dashboard/hr/add"
