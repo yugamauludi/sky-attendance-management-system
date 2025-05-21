@@ -5,7 +5,7 @@ interface Role {
   Name: string;
 }
 
-interface Employee{
+interface Employee {
   Id: string;
   Username: string;
   Email: string;
@@ -30,21 +30,18 @@ interface EmployeeResponse {
 
 
 export const getAllEmployees = async (): Promise<Employee[]> => {
-  try {    
-    // Dapatkan signature terlebih dahulu
+  try {
     const { timestamp, signature } = await getSignature();
-    
-    console.log('Signature diterima:', {
-      timestamp,
-      signature
-    });
+
+    const token = document.cookie.split('; ').find(row => row.startsWith('token='))?.split('=')[1] || '';
 
     const response = await fetch('/api/users/get-all', {
       method: 'GET',
       headers: {
         'Accept': 'application/json',
         'x-timestamp': timestamp,
-        'x-signature': signature
+        'x-signature': signature,
+        'Authorization': `Bearer ${token}`
       },
     });
 
@@ -73,7 +70,7 @@ export const deleteEmployee = async (id: string): Promise<void> => {
   try {
     // Dapatkan signature terlebih dahulu
     const { timestamp, signature } = await getSignature();
-  
+
     const response = await fetch(`/api/users/delete/${id}`, {
       method: 'DELETE',
       headers: {
@@ -95,21 +92,24 @@ export const deleteEmployee = async (id: string): Promise<void> => {
 
 export const addEmployee = async (employeeData: any) => {
   try {
-    console.log(employeeData, "<<<<employeeData");
-    
     // Dapatkan signature terlebih dahulu
     const { timestamp, signature } = await getSignatureAddUser(employeeData);
-
+    
+    const token = document.cookie.split('; ').find(row => row.startsWith('token='))?.split('=')[1] || '';
+    
     const response = await fetch('/api/users/create', {
       method: 'POST',
       headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
         'x-timestamp': timestamp,
-        'x-signature': signature
+        'x-signature': signature,
+        'Authorization': `Bearer ${token}`
       },
+      credentials: "include",
       body: JSON.stringify(employeeData)
     });
+    console.log("RESPONSE: ", response);
 
     if (!response.ok) {
       const errorData = await response.json();

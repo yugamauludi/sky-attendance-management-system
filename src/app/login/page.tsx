@@ -32,6 +32,9 @@ export default function LoginPage() {
 
       document.cookie = `token=${data.token}; path=/`;
       document.cookie = `userRole=${data.role}; path=/`;
+      localStorage.setItem("username", data.username);
+      localStorage.setItem("id", data.id);
+      localStorage.setItem("role", data.role);
 
       if (data.role === "hr") {
         router.replace("/dashboard/hr");
@@ -88,7 +91,7 @@ export default function LoginPage() {
                 {error}
               </div>
             )}
-            
+
             <div className="space-y-4">
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
@@ -133,7 +136,7 @@ export default function LoginPage() {
                   name="password"
                   type={showPassword ? "text" : "password"}
                   required
-                  className="peer w-full rounded-lg border border-yellow-500/20 bg-black/20 pl-10 pr-10 py-3 outline-none transition-all focus:border-yellow-500 text-yellow-400 placeholder-zinc-400 autofill-style"
+                  className="peer w-full rounded-lg border border-yellow-500/20 bg-black/20 pl-10 pr-4 py-3 outline-none transition-all focus:border-yellow-500 text-yellow-400 placeholder-zinc-400 autofill-style"
                   placeholder=""
                   value={credentials.password}
                   onChange={handleChange}
@@ -193,10 +196,10 @@ export default function LoginPage() {
               type="submit"
               disabled={isLoading}
               className={`w-full transform rounded-lg bg-gradient-to-r from-yellow-400 to-yellow-600 py-3 text-sm font-medium text-black transition-all hover:from-yellow-500 hover:to-yellow-700 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 ${
-                isLoading ? 'opacity-75 cursor-not-allowed' : 'cursor-pointer'
+                isLoading ? "opacity-75 cursor-not-allowed" : "cursor-pointer"
               }`}
             >
-              {isLoading ? 'Memproses...' : 'Masuk'}
+              {isLoading ? "Memproses..." : "Masuk"}
             </button>
           </form>
         </div>

@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
-// import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import Background from "@/components/Background";
 import Image from "next/image";
 import { logout } from "@/services/auth";
+import { editUserProfile, getUserProfile } from "@/services/profile";
+import toast from "react-hot-toast";
 
 interface UserProfile {
   employeeId: string;
@@ -24,25 +25,41 @@ interface UserProfile {
 }
 
 export default function ProfilePage() {
-  // const router = useRouter();
+  const [isLoading, setIsLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [profile, setProfile] = useState<UserProfile>({
-    employeeId: "EMP-2024-001",
-    name: "Budi Santoso",
-    email: "budi.santoso@example.com",
-    position: "Software Engineer",
-    department: "Engineering",
-    gender: "Laki-laki",
-    idNumber: "3171234567890001",
-    birthPlace: "Jakarta",
-    birthDate: "15 Mei 1990",
-    joinDate: "01 Januari 2022",
-    phoneNumber: "081234567890",
-    address: "Jl. Sudirman No. 123, Jakarta",
-    workLocation: "Jakarta",
+    employeeId: "",
+    name: "",
+    email: "",
+    position: "",
+    department: "",
+    gender: "",
+    idNumber: "",
+    birthPlace: "",
+    birthDate: "",
+    joinDate: "",
+    phoneNumber: "",
+    address: "",
+    workLocation: "",
   });
 
   const [editedProfile, setEditedProfile] = useState<UserProfile>(profile);
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const profileData = await getUserProfile();
+        setProfile(profileData);
+        setEditedProfile(profileData);
+      } catch (error) {
+        console.error('Error fetching profile:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchProfile();
+  }, []);
 
   const handleLogout = async () => {
     try {
@@ -82,10 +99,26 @@ export default function ProfilePage() {
         console.log("Uploading image:", selectedImage);
       }
 
+      // Persiapkan data untuk API
+      const profileData = {
+        Email: editedProfile.email,
+        Name: editedProfile.name,
+        Address: editedProfile.address,
+        NoTlp: editedProfile.phoneNumber,
+      };
+
+      // Panggil API untuk update profil
+      await editUserProfile(profileData);
+
+      // Update state lokal
       setProfile(editedProfile);
       setIsEditing(false);
+
+      // Tampilkan notifikasi sukses
+      toast.success("Profil berhasil diperbarui");
     } catch (error) {
       console.error("Gagal menyimpan perubahan:", error);
+      toast.error("Gagal memperbarui profil. Silakan coba lagi.");
     }
   };
 
@@ -105,6 +138,14 @@ export default function ProfilePage() {
       [name]: value,
     }));
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-[#1a1a1a] flex items-center justify-center">
+        <div className="text-white">Memuat...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#1a1a1a]">

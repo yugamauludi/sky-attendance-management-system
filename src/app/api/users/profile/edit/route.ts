@@ -1,14 +1,14 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-export async function POST(request: NextRequest) {
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
   try {
     const timestamp = request.headers.get('x-timestamp');
     const signature = request.headers.get('x-signature');
-    const body = await request.json();
-    
-    // Ambil token dari cookies
-    const token = request.cookies.get('token')?.value;
+    const token = request.headers.get('Authorization');
 
     if (!timestamp || !signature) {
       return NextResponse.json(
@@ -17,29 +17,28 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const headers: HeadersInit = {
-      "Accept": "application/json",
-      "Content-Type": "application/json",
-      "x-timestamp": timestamp,
-      "x-signature": signature
-    };
+    const body = await request.json();
 
-    // Tambahkan token ke header Cookie jika tersedia
-    if (token) {
-      headers["Cookie"] = `token=${token}`;
-    }
-
-    const response = await fetch(`${process.env.API_URL}/v1/api/users`, {
-      method: "POST",
-      headers,
-      body: JSON.stringify(body)
-    });
+    const response = await fetch(
+      `${process.env.API_URL}/v1/api/detail-users/updated/${params.id}`,
+      {
+        method: "PUT",
+        headers: {
+          "Accept": "application/json",
+          "Content-Type": "application/json",
+          "x-timestamp": timestamp,
+          "x-signature": signature,
+          "Authorization": token || '',
+        },
+        body: JSON.stringify(body)
+      }
+    );
 
     const data = await response.json();
 
     if (!response.ok) {
       return NextResponse.json(
-        { message: data.message || "Gagal menambahkan karyawan" },
+        { message: data.message || "Gagal mengupdate profile" },
         { status: response.status }
       );
     }

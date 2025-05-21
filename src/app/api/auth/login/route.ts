@@ -25,12 +25,13 @@ export async function POST(request: Request) {
     });
 
     const data = await response.json();
-
-    // Ambil cookie dari header response eksternal
     const rawSetCookie = response.headers.get("set-cookie");
 
     const res = NextResponse.json({ 
-      role: data?.user?.role === 2 ? 'hr' : 'employee' 
+      role: data?.user?.role === 2 ? 'hr' : 'employee',
+      id: data?.user?.id,
+      username: data?.user?.username,
+      roleId: data?.user?.role,
     });
 
     if (rawSetCookie) {

@@ -1,3 +1,4 @@
+import Cookies from 'js-cookie';
 interface LoginCredentials {
   identifier: string;
   password: string;
@@ -7,6 +8,9 @@ interface LoginCredentials {
 interface LoginResponse {
   token: string;
   role: string;
+  username: string;
+  id: string;
+  roleId: string;
 }
 
 export const login = async (credentials: LoginCredentials): Promise<LoginResponse> => {
@@ -24,7 +28,7 @@ export const login = async (credentials: LoginCredentials): Promise<LoginRespons
 
     if (!response.ok) {
       throw new Error(data.message || "Login gagal");
-    }    
+    }
 
     return data;
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -35,21 +39,16 @@ export const login = async (credentials: LoginCredentials): Promise<LoginRespons
 
 export const logout = async () => {
   try {
-    // Hapus cookie dengan parameter lengkap
-    document.cookie = "token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; domain=localhost; Secure; SameSite=Strict";
-    document.cookie = "userRole=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; domain=localhost; Secure; SameSite=Strict";
+    Cookies.remove('token', { path: '/' });
+    Cookies.remove('userRole', { path: '/' });
     
-    // Hapus token dari localStorage jika ada
     localStorage.removeItem('token');
     localStorage.removeItem('userRole');
 
-    // Clear session storage juga
     sessionStorage.clear();
     
-    // Tunggu sebentar untuk memastikan semua cookie terhapus
     await new Promise(resolve => setTimeout(resolve, 100));
     
-    // Force reload halaman untuk membersihkan state
     window.location.href = '/login';
   } catch (error) {
     console.error('Error during logout:', error);
