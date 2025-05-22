@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Background from "@/components/Background";
 import Image from "next/image";
 import { logout } from "@/services/auth";
-import { editUserProfile, getUserProfile } from "@/services/profile";
+import { EditProfileRequest, editUserProfile, getUserProfile } from "@/services/profile";
 import toast from "react-hot-toast";
 
 interface UserProfile {
@@ -21,7 +21,7 @@ interface UserProfile {
   phoneNumber: string;
   address: string;
   workLocation: string;
-  profileImage?: string;
+  profileImage?: string | File;  // Ubah tipe data ini
 }
 
 export default function ProfilePage() {
@@ -95,26 +95,34 @@ export default function ProfilePage() {
 
   const handleSave = async () => {
     try {
-      if (selectedImage) {
-        console.log("Uploading image:", selectedImage);
+      if (!selectedImage) {
+        toast.error("Silakan pilih foto profil");
+        return;
       }
 
-      // Persiapkan data untuk API
-      const profileData = {
-        Email: editedProfile.email,
+      console.log(selectedImage, "<<<<selectedImage");
+      
+
+      const profileData: EditProfileRequest = {
         Name: editedProfile.name,
         Address: editedProfile.address,
         NoTlp: editedProfile.phoneNumber,
+        Photo: selectedImage
       };
 
-      // Panggil API untuk update profil
+      console.log(profileData, "<<<<profileData");
+      
+
       await editUserProfile(profileData);
 
-      // Update state lokal
-      setProfile(editedProfile);
+      setProfile({
+        ...editedProfile,
+        profileImage: URL.createObjectURL(selectedImage)
+      });
       setIsEditing(false);
+      setSelectedImage(null);
+      setPreviewImage(null);
 
-      // Tampilkan notifikasi sukses
       toast.success("Profil berhasil diperbarui");
     } catch (error) {
       console.error("Gagal menyimpan perubahan:", error);
@@ -301,7 +309,7 @@ export default function ProfilePage() {
                       </div>
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div>
+                        {/* <div>
                           <label className="block text-sm text-zinc-400 mb-1">
                             Jenis Kelamin
                           </label>
@@ -314,7 +322,7 @@ export default function ProfilePage() {
                             <option value="Laki-laki">Laki-laki</option>
                             <option value="Perempuan">Perempuan</option>
                           </select>
-                        </div>
+                        </div> */}
                         <div>
                           <label className="block text-sm text-zinc-400 mb-1">
                             Nomor KTP
@@ -327,9 +335,21 @@ export default function ProfilePage() {
                             className="w-full rounded-lg border border-yellow-500/20 bg-black/20 px-3 py-2 text-white"
                           />
                         </div>
+                        <div>
+                          <label className="block text-sm text-zinc-400 mb-1">
+                            Alamat
+                          </label>
+                          <input
+                            type="text"
+                            name="address"
+                            value={editedProfile.address}
+                            onChange={handleChange}
+                            className="w-full rounded-lg border border-yellow-500/20 bg-black/20 px-3 py-2 text-white"
+                          />
+                        </div>
                       </div>
 
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {/* <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                           <label className="block text-sm text-zinc-400 mb-1">
                             Tempat Lahir
@@ -354,9 +374,9 @@ export default function ProfilePage() {
                             className="w-full rounded-lg border border-yellow-500/20 bg-black/20 px-3 py-2 text-white"
                           />
                         </div>
-                      </div>
+                      </div> */}
 
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {/* <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                           <label className="block text-sm text-zinc-400 mb-1">
                             Email
@@ -369,19 +389,8 @@ export default function ProfilePage() {
                             className="w-full rounded-lg border border-yellow-500/20 bg-black/20 px-3 py-2 text-white"
                           />
                         </div>
-                        <div>
-                          <label className="block text-sm text-zinc-400 mb-1">
-                            Alamat
-                          </label>
-                          <input
-                            type="text"
-                            name="address"
-                            value={editedProfile.address}
-                            onChange={handleChange}
-                            className="w-full rounded-lg border border-yellow-500/20 bg-black/20 px-3 py-2 text-white"
-                          />
-                        </div>
-                      </div>
+                        
+                      </div> */}
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
@@ -411,7 +420,7 @@ export default function ProfilePage() {
                       </div>
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div>
+                        {/* <div>
                           <label className="block text-sm text-zinc-400 mb-1">
                             Tanggal Bergabung
                           </label>
@@ -422,7 +431,7 @@ export default function ProfilePage() {
                             className="w-full rounded-lg border border-yellow-500/20 bg-black/20 px-3 py-2 text-white opacity-75 cursor-not-allowed"
                             disabled
                           />
-                        </div>
+                        </div> */}
                         <div>
                           <label className="block text-sm text-zinc-400 mb-1">
                             Nomor Telepon
@@ -452,17 +461,21 @@ export default function ProfilePage() {
                       </div>
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div>
+                        {/* <div>
                           <p className="text-sm text-zinc-400">Jenis Kelamin</p>
                           <p className="text-white">{profile.gender}</p>
-                        </div>
+                        </div> */}
                         <div>
                           <p className="text-sm text-zinc-400">Nomor KTP</p>
                           <p className="text-white">{profile.idNumber}</p>
                         </div>
+                        <div>
+                          <p className="text-sm text-zinc-400">Alamat</p>
+                          <p className="text-white">{profile.address}</p>
+                        </div>
                       </div>
 
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {/* <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                           <p className="text-sm text-zinc-400">Tempat Lahir</p>
                           <p className="text-white">{profile.birthPlace}</p>
@@ -471,18 +484,15 @@ export default function ProfilePage() {
                           <p className="text-sm text-zinc-400">Tanggal Lahir</p>
                           <p className="text-white">{profile.birthDate}</p>
                         </div>
-                      </div>
+                      </div> */}
 
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {/* <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                           <p className="text-sm text-zinc-400">Email</p>
                           <p className="text-white">{profile.email}</p>
                         </div>
-                        <div>
-                          <p className="text-sm text-zinc-400">Alamat</p>
-                          <p className="text-white">{profile.address}</p>
-                        </div>
-                      </div>
+                        
+                      </div> */}
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
@@ -496,12 +506,12 @@ export default function ProfilePage() {
                       </div>
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div>
+                        {/* <div>
                           <p className="text-sm text-zinc-400">
                             Tanggal Bergabung
                           </p>
                           <p className="text-white">{profile.joinDate}</p>
-                        </div>
+                        </div> */}
                         <div>
                           <p className="text-sm text-zinc-400">Nomor Telepon</p>
                           <p className="text-white">{profile.phoneNumber}</p>

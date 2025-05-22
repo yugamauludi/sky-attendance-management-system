@@ -15,6 +15,9 @@ const DetailModal: React.FC<EmployeeDetail> = ({
 }) => {
   if (!isOpen || !employee) return null;
   console.log(employee, "<<employee.pathIn");
+  const baseUrl = process.env.NEXT_PUBLIC_API_URL;
+  console.log(baseUrl, "<<baseUrl");
+  
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 pb-24">
@@ -46,29 +49,31 @@ const DetailModal: React.FC<EmployeeDetail> = ({
 
           {/* Foto Check-in & Check-out */}
           <div className="grid grid-cols-2 gap-4">
-            <div className="aspect-video rounded-xl bg-black/40 flex items-center justify-center">
+            <div className="aspect-video rounded-xl bg-black/40 flex flex-col items-center justify-center">
+              <p className="text-xs sm:text-sm text-zinc-400 mb-2">Foto Check-in</p>
               <Image
                 width={400}
                 height={225}
-                src={`https://devtest08.skyparking.online/${employee.pathIn}`}
+                src={`${baseUrl}/${employee.pathIn}`}
                 alt="Foto Check-in"
                 className="rounded-xl object-cover"
               />
-              {/* <p className="text-xs sm:text-sm text-zinc-400">Foto Check-in</p> */}
             </div>
-            <div className="aspect-video rounded-xl bg-black/40 flex items-center justify-center">
+            <div className="aspect-video rounded-xl bg-black/40 flex flex-col items-center justify-center relative">
+              <p className="text-xs sm:text-sm text-zinc-400 mb-2">Foto Check-out</p>
               {employee.pathOut ? (
                 <Image
                   width={400}
                   height={225}
-                  src={`https://devtest08.skyparking.online/${employee.pathOut}`}
-                  alt=" Foto Check-out"
+                  src={`${baseUrl}/${employee.pathOut}`}
+                  alt="Foto Check-out"
                   className="rounded-xl object-cover"
                 />
               ) : (
-                <span className="text-zinc-400">Belum</span>
+                <div className="flex flex-col items-center justify-center text-center">
+                  <span className="text-zinc-400 text-sm">Belum melakukan check-out</span>
+                </div>
               )}
-              <p className="text-xs sm:text-sm text-zinc-400">Foto Check-out</p>
             </div>
           </div>
 

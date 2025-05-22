@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { DataTable } from "@/components/DataTable";
 import { ConfirmationModal } from "@/components/ConfirmationModal";
 import Background from "@/components/Background";
-import { deleteEmployee, getAllEmployees } from "@/services/employees";
+import { deleteEmployee, getAllEmployees, getEmployeeDetail } from "@/services/employees";
 import { Employee } from "@/types/employee";
 import { toast } from "react-hot-toast";
 
@@ -13,11 +13,8 @@ const mapApiEmployeeToEmployee = (apiEmployee: any): Employee => {
   return {
     id: apiEmployee.Id,
     name: apiEmployee.Name,
-    email: apiEmployee.Email,
     gender: apiEmployee.StatusKaryawan,
     idNumber: apiEmployee.NIK,
-    birthPlace: "",
-    birthDate: "",
     address: apiEmployee.Address,
     position: apiEmployee.Divisi,
     department: apiEmployee.Departement,
@@ -130,6 +127,33 @@ export default function EmployeeListPage() {
     );
   }
 
+  const handleRowClick = async (employee: Employee) => {
+    try {
+      const detailResponse = await getEmployeeDetail(employee.id);
+      const detailData = detailResponse.data;
+      
+      // Update employee detail dengan data dari API
+      const updatedEmployee: Employee = {
+        id: detailData.Id,
+        userId: detailData.UserId,
+        name: detailData.Name,
+        gender: detailData.StatusKaryawan,
+        idNumber: detailData.NIK,
+        address: detailData.Address,
+        position: detailData.Divisi,
+        department: detailData.Departement,
+        joinDate: detailData.CreatedAt,
+        phoneNumber: detailData.NoTlp,
+        location: detailData.LocationCode,
+      };
+      
+      setSelectedEmployee(updatedEmployee);
+    } catch (error) {
+      console.error("Error fetching employee detail:", error);
+      toast.error("Gagal memuat detail karyawan");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#1a1a1a]">
       <Background />
@@ -150,7 +174,7 @@ export default function EmployeeListPage() {
                 { key: "actions", label: "Aksi" },
               ]}
               data={employees}
-              onRowClick={(employee) => setSelectedEmployee(employee)}
+              onRowClick={handleRowClick}
               renderCell={renderEmployeeCell}
             />
           </div>
@@ -212,12 +236,18 @@ export default function EmployeeListPage() {
                   </p>
                 </div>
                 <div>
+                  <p className="text-xs text-zinc-400">Alamat</p>
+                  <p className="text-sm text-white">
+                    {selectedEmployee.address}
+                  </p>
+                </div>
+                {/* <div>
                   <p className="text-xs text-zinc-400">Tempat Lahir</p>
                   <p className="text-sm text-white">
                     {selectedEmployee.birthPlace}
                   </p>
-                </div>
-                <div>
+                </div> */}
+                {/* <div>
                   <p className="text-xs text-zinc-400">Tanggal Lahir</p>
                   <p className="text-sm text-white">
                     {new Date(selectedEmployee.birthDate).toLocaleDateString(
@@ -229,20 +259,14 @@ export default function EmployeeListPage() {
                       }
                     )}
                   </p>
-                </div>
+                </div> */}
               </div>
 
               <div className="space-y-3">
-                <div>
+                {/* <div>
                   <p className="text-xs text-zinc-400">Email</p>
                   <p className="text-sm text-white">{selectedEmployee.email}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-zinc-400">Alamat</p>
-                  <p className="text-sm text-white">
-                    {selectedEmployee.address}
-                  </p>
-                </div>
+                </div> */}
                 <div>
                   <p className="text-xs text-zinc-400">Jabatan</p>
                   <p className="text-sm text-white">

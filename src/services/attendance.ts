@@ -1,114 +1,124 @@
 import { getSignature } from "./signature";
 
+interface SummaryData {
+    Karyawan: number;
+    Hadir: number;
+    Izin: number;
+    Sakit: number;
+    Cuti: number;
+    Absen: number;
+}
+
 interface AttendanceData {
-    Id: number;
-    UserId: string;
-    Date: string;
-    LocationName: string;
-    pathIn: string;
-    pathOut: string;
-    Address: string;
-    InTime: string;
-    OutTime: string;
-    Duration: number;
-    Status: string;
-    Description: string;
+  Id: number;
+  UserId: string;
+  FUllName: string;
+  Date: string;
+  LocationName: string;
+  pathIn: string;
+  pathOut: string;
+  Address: string;
+  InTime: string;
+  OutTime: string;
+  Duration: number;
+  Status: string;
+  Description: string;
 }
 
-interface AttendanceResponse {
-    code: number;
-    message: string;
-    data: AttendanceData[];
-    meta: {
-        page: number;
-        limit: number;
-        totalPages: number;
-        totalItems: number;
-    };
-}
-export const getAllAttendance = async (): Promise<AttendanceData[]> => {
-    try {
-        // Dapatkan signature terlebih dahulu
-        const { timestamp, signature } = await getSignature();
-
-        const response = await fetch('/api/attendance/get-all', {
-            method: 'GET',
-            headers: {
-                'Accept': 'application/json',
-                'x-timestamp': timestamp,
-                'x-signature': signature
-            },
-        });
-
-        if (!response.ok) {
-            console.error('Error response:', response.status);
-            const errorData = await response.json();
-            console.error('Error data:', errorData);
-            throw new Error(errorData.message || 'Gagal mendapatkan daftar karyawan');
-        }
-
-        const responseData: AttendanceResponse = await response.json();
-        console.log('Response data:', responseData);
-
-        if (!responseData.data || !Array.isArray(responseData.data)) {
-            throw new Error('Format data tidak valid');
-        }
-
-        return responseData.data;
-    } catch (error) {
-        console.error('Error fetching employees:', error);
-        throw error;
+export interface AttendanceResponse {
+  code: number;
+  message: string;
+  data: [
+    {
+      Summary: SummaryData;
+    },
+    {
+      data: AttendanceData[];
     }
+  ];
+  meta: {
+    page: number;
+    limit: number;
+    totalPages: number;
+    totalItems: number;
+  };
+}
+export const getAllAttendance = async (page = 1, limit = 10) => {
+  try {
+    const { timestamp, signature } = await getSignature();
+    const token = document.cookie.split('; ').find(row => row.startsWith('token='))?.split('=')[1] || '';
+
+    const response = await fetch(`/api/attendance/get-all?page=${page}&limit=${limit}`, {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'x-timestamp': timestamp,
+        'x-signature': signature,
+        'Authorization': `Bearer ${token}`
+      },
+      credentials: 'include',
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch attendance data');
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Error:', error);
+    throw error;
+  }
 };
 
 interface CheckInResponse {
-    code: number;
-    message: string;
-    data: {
-        Id: string;
-        UserId: string;
-        InTime: string;
-        // ... tambahkan field lain sesuai kebutuhan
-    };
+  code: number;
+  message: string;
+  data: {
+    Id: string;
+    UserId: string;
+    InTime: string;
+    // ... tambahkan field lain sesuai kebutuhan
+  };
 }
 
 
 export const checkInAttendance = async (data: {
-    latitude: string;
-    longitude: string;
-    photo: File;
+  latitude: string;
+  longitude: string;
+  photo: File;
 }): Promise<CheckInResponse> => {
-    try {
-        const { timestamp, signature } = await getSignature();
-        const token = document.cookie.split('; ').find(row => row.startsWith('token='))?.split('=')[1] || '';
+  try {
+    const { timestamp, signature } = await getSignature();
+    const token = document.cookie.split('; ').find(row => row.startsWith('token='))?.split('=')[1] || '';
 
-        const formData = new FormData();
-        formData.append('longitude', data.longitude);
-        formData.append('latitude', data.latitude);
-        formData.append('photo', data.photo);
+    const formData = new FormData();
+    formData.append('longitude', data.longitude);
+    formData.append('latitude', data.latitude);
+    formData.append('photo', data.photo);
 
-        const response = await fetch('/api/attendance/check-in', {
-            method: 'POST',
-            headers: {
-                'Accept': 'application/json',
-                'x-timestamp': timestamp,
-                'x-signature': signature,
-                'Authorization': `Bearer ${token}`
-            },
-            body: formData
-        });
+    const response = await fetch('/api/attendance/check-in', {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'x-timestamp': timestamp,
+        'x-signature': signature,
+        'Authorization': `Bearer ${token}`
+      },
+      body: formData
+    });
 
-        if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.message || 'Gagal melakukan check-in');
-        }
-
-        const responseData: CheckInResponse = await response.json();
-        return responseData;
-    } catch (error) {
-        console.error('Error during check-in:', error);
-        throw error;
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Gagal melakukan check-in');
     }
+
+    const responseData: CheckInResponse = await response.json();
+    return responseData;
+  } catch (error) {
+    console.error('Error during check-in:', error);
+    throw error;
+  }
 };
 
 export const checkOutAttendance = async ({

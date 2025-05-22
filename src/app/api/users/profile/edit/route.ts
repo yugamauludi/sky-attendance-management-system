@@ -17,20 +17,19 @@ export async function PUT(
       );
     }
 
-    const body = await request.json();
-
+    const formData = await request.formData();
+    
     const response = await fetch(
       `${process.env.API_URL}/v1/api/detail-users/updated/${params.id}`,
       {
         method: "PUT",
         headers: {
           "Accept": "application/json",
-          "Content-Type": "application/json",
           "x-timestamp": timestamp,
           "x-signature": signature,
           "Authorization": token || '',
         },
-        body: JSON.stringify(body)
+        body: formData
       }
     );
 

@@ -128,3 +128,60 @@ export const addEmployee = async (employeeData: any) => {
     throw error;
   }
 };
+
+
+interface EmployeeDetailResponse {
+  code: number;
+  status: string;
+  message: string;
+  data: {
+    Id: string;
+    UserId: string;
+    NIK: string;
+    Name: string;
+    Departement: string;
+    Divisi: string;
+    Address: string;
+    NoTlp: string;
+    LocationCode: string;
+    StatusKaryawan: string;
+    Status: string;
+    CreatedBy: string;
+    CreatedAt: string;
+    UpdatedAt: string;
+    UpdatedBy: string | null;
+    DeletedAt: string | null;
+    DeletedBy: string | null;
+    Record: string;
+  };
+}
+
+export const getEmployeeDetail = async (id: string): Promise<EmployeeDetailResponse> => {
+  try {
+    const { timestamp, signature } = await getSignature();
+    const token = document.cookie.split('; ').find(row => row.startsWith('token='))?.split('=')[1] || '';
+
+    const response = await fetch(`/api/users/profile?id=${id}`, {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'x-timestamp': timestamp,
+        'x-signature': signature,
+        'Authorization': `Bearer ${token}`
+      },
+      credentials: 'include',
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Gagal mendapatkan detail karyawan');
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error fetching employee detail:', error);
+    throw error;
+  }
+};

@@ -34,7 +34,7 @@ const mapApiEmployeeToEmployee = (apiAttendance: any): EmployeeAttendance => {
   return {
     id: apiAttendance.Id,
     userId: apiAttendance.UserId,
-    name: apiAttendance.UserId,
+    name: apiAttendance.Fullname,
     location: apiAttendance.LocationName + " - " + apiAttendance.Address,
     date: apiAttendance.Date,
     checkIn: apiAttendance.InTime,
@@ -49,20 +49,50 @@ const mapApiEmployeeToEmployee = (apiAttendance: any): EmployeeAttendance => {
 
 export default function HRDashboardPage() {
   const [attendances, setAttendances] = useState<EmployeeAttendance[]>([]);
+  const [stats, setStats] = useState({
+    totalKaryawan: 0,
+    inhouse: 0,
+    vendor: 0,
+    hadir: 0,
+    sakit: 0,
+    cuti: 0,
+  });
+
+  const [currentPage, setCurrentPage] = useState(1);
+  // const [totalPages, setTotalPages] = useState(1);
+  const [pagination, setPagination] = useState({});
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+
   useEffect(() => {
     const fetchAttendances = async () => {
       try {
-        const apiEmployees = await getAllAttendance();
-        const mappedEmployees = apiEmployees.map(mapApiEmployeeToEmployee);
+        const response = await getAllAttendance(currentPage, itemsPerPage);
+        console.log(response, "<<<<response");
+
+        setPagination(response.meta);
+
+        const mappedEmployees = response.data[1].data.map(
+          mapApiEmployeeToEmployee
+        );
         setAttendances(mappedEmployees);
+
+        // Update stats based on summary data
+        const summary = response.data[0].Summary;
+        setStats({
+          totalKaryawan: summary.Karyawan,
+          inhouse: 0,
+          vendor: 0,
+          hadir: summary.Hadir,
+          sakit: summary.Sakit,
+          cuti: summary.Cuti,
+        });
       } catch (error) {
         console.error("Error fetching employees:", error);
       }
     };
 
     fetchAttendances();
-  }, []);
-  console.log(attendances, "<<<<ini attendance nya nih");
+  }, [currentPage, itemsPerPage]); // Tambahkan itemsPerPage sebagai dependency
 
   const [filteredAttendances, setFilteredAttendances] = useState<
     EmployeeAttendance[]
@@ -74,26 +104,18 @@ export default function HRDashboardPage() {
     location: "",
     status: "",
   });
-  const [stats, setStats] = useState({
-    totalKaryawan: 0,
-    inhouse: 0,
-    vendor: 0,
-    hadir: 0,
-    sakit: 0,
-    cuti: 0,
-  });
 
   useEffect(() => {
     // Filter data berdasarkan kriteria
-    const filtered = attendances.filter((attendance) => {
-      const matchName = attendance.name
-        .toLowerCase()
-        .includes(filters.name.toLowerCase());
-      const matchLocation = attendance.location
-        .toLowerCase()
-        .includes(filters.location.toLowerCase());
+    const filtered = attendances?.filter((attendance) => {
+      const matchName = attendance?.name
+        ?.toLowerCase()
+        ?.includes(filters?.name?.toLowerCase());
+      const matchLocation = attendance?.location
+        ?.toLowerCase()
+        ?.includes(filters?.location?.toLowerCase());
       const matchStatus =
-        filters.status === "" || attendance.status === filters.status;
+        filters?.status === "" || attendance?.status === filters.status;
 
       let matchDate = true;
       if (filters.startDate && filters.endDate) {
@@ -500,6 +522,22 @@ export default function HRDashboardPage() {
                 </select>
               </div>
             </div>
+            <div className="flex justify-between items-center mb-4">
+              <div className="flex items-center space-x-2">
+                <label className="text-sm text-zinc-400">Tampilkan:</label>
+                <select
+                  value={itemsPerPage}
+                  onChange={(e) => setItemsPerPage(Number(e.target.value))}
+                  className="rounded-lg bg-black/30 px-3 py-2 text-sm text-white ring-1 ring-yellow-500/20 focus:outline-none focus:ring-2 focus:ring-yellow-500/40"
+                >
+                  <option value={10}>10</option>
+                  <option value={20}>20</option>
+                  <option value={50}>50</option>
+                  <option value={100}>100</option>
+                </select>
+                <span className="text-sm text-zinc-400">data per halaman</span>
+              </div>
+            </div>
             <DataTable
               columns={columns}
               data={filteredAttendances}
@@ -507,6 +545,11 @@ export default function HRDashboardPage() {
                 setDetailModal({ isOpen: true, employee: attendance })
               }
               renderCell={renderAttendanceCell}
+              currentPage={currentPage}
+              totalPages={(pagination as any).totalPages}
+              onPageChange={setCurrentPage}
+              itemsPerPage={itemsPerPage}
+              totalItems={(pagination as any).totalItems} // Cast pagination to any to access totalItems
             />
           </div>
         </div>

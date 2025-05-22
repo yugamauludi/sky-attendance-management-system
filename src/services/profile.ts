@@ -1,4 +1,4 @@
-import { getSignature, getSignatureAddUserDetail } from "./signature";
+import { getSignature } from "./signature";
 
 interface UserProfile {
   employeeId: string;
@@ -14,13 +14,13 @@ interface UserProfile {
   phoneNumber: string;
   address: string;
   workLocation: string;
-  profileImage?: string;
+  profileImage: string | File;
 }
 
 // Interface untuk request body edit profile
-interface EditProfileRequest {
+export interface EditProfileRequest {
 //   Username: string;
-  Email: string;
+  // Email: string;
 
 //   RoleId: number;
   Name: string;
@@ -28,6 +28,7 @@ interface EditProfileRequest {
 //   Divisi: string;
   Address: string;
   NoTlp: string;
+  Photo: File;
 //   LocationCode: string;
 //   StatusKaryawan: string;
 }
@@ -42,7 +43,7 @@ export const getUserProfile = async (): Promise<UserProfile> => {
     const { timestamp, signature } = await getSignature();
     const token = document.cookie.split('; ').find(row => row.startsWith('token='))?.split('=')[1] || '';
 
-    const response = await fetch(`/api/users/profile?id=${userId}`, {
+    const response = await fetch(`/api/users/profile?id=${"78219e88-f815-4265-a508-e66b211dfd4a"}`, {
       method: 'GET',
       headers: {
         'Accept': 'application/json',
@@ -60,10 +61,12 @@ export const getUserProfile = async (): Promise<UserProfile> => {
     }
 
     const apiData = await response.json();
+    console.log(apiData.data, "apiData");
+    
     
     // Transform API response ke format UserProfile
     const transformedData: UserProfile = {
-      employeeId: apiData.data.NIK,
+      employeeId: apiData.data.UserId,
       name: apiData.data.Name,
       email: '', // Tidak ada di response API
       position: apiData.data.Divisi,
@@ -87,27 +90,33 @@ export const getUserProfile = async (): Promise<UserProfile> => {
 };
 
 // Fungsi untuk edit profile
-export const editUserProfile = async (profileData: EditProfileRequest): Promise<void> => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const editUserProfile = async (profileData: EditProfileRequest): Promise<any> => {
   try {
     const userId = localStorage.getItem('id');
     if (!userId) {
       throw new Error('User ID tidak ditemukan');
     }
 
-    const { timestamp, signature } = await getSignatureAddUserDetail(profileData);
+    // const { timestamp, signature } = await getSignatureAddUserDetail(profileData);
     const token = document.cookie.split('; ').find(row => row.startsWith('token='))?.split('=')[1] || '';
+
+    // Create FormData from the request data
+    const formData = new FormData();
+    formData.append('Name', profileData.Name);
+    formData.append('Address', profileData.Address);
+    formData.append('NoTlp', profileData.NoTlp);
+    formData.append('Photo', profileData.Photo);
 
     const response = await fetch(`/api/users/profile/edit?id=${userId}`, {
       method: 'PUT',
       headers: {
         'Accept': 'application/json',
-        'Content-Type': 'application/json',
-        'x-timestamp': timestamp,
-        'x-signature': signature,
+        // 'x-timestamp': timestamp,
+        // 'x-signature': signature,
         'Authorization': `Bearer ${token}`
       },
-      credentials: 'include',
-      body: JSON.stringify(profileData)
+      body: formData
     });
 
     if (!response.ok) {
