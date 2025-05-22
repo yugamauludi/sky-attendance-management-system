@@ -1,30 +1,12 @@
 "use client";
 
 import Background from "@/components/Background";
-import { useState, useRef } from "react";
-import dynamic from "next/dynamic";
-
-// Import Leaflet secara dinamis untuk menghindari masalah SSR
-const MapContainer = dynamic(
-  () => import("react-leaflet").then((mod) => mod.MapContainer),
-  { ssr: false }
-);
-const TileLayer = dynamic(
-  () => import("react-leaflet").then((mod) => mod.TileLayer),
-  { ssr: false }
-);
-const Marker = dynamic(
-  () => import("react-leaflet").then((mod) => mod.Marker),
-  { ssr: false }
-);
-const Popup = dynamic(() => import("react-leaflet").then((mod) => mod.Popup), {
-  ssr: false,
-});
-
+import { useState, useRef, useEffect } from "react";
 import Modal from "@/components/Modal";
-// import Link from "next/link";
 import toast from "react-hot-toast";
-import { checkInAttendance, checkOutAttendance } from "@/services/attendance";
+import { checkInAttendance, checkOutAttendance, getAttendanceDetail } from "@/services/attendance";
+import { formatDateTime } from "@/utiils/dateFormatter";
+
 
 interface AttendanceStatus {
   status: "present" | "absent" | "not_yet";
@@ -32,8 +14,6 @@ interface AttendanceStatus {
   checkOut?: string;
   duration?: string;
   location?: {
-    latitude: number;
-    longitude: number;
     address: string;
   };
 }
@@ -51,9 +31,34 @@ export default function DashboardPage() {
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [isCheckingIn, setIsCheckingIn] = useState(false);
 
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const attendanceDetail = await getAttendanceDetail();
+        console.log(attendanceDetail, '<<<<<cek iniii');
+        
+        // Set state attendance with data from response
+        setAttendance({
+          status: attendanceDetail.data.Status === "Hadir" ? "present" : 
+                attendanceDetail.data.Status === "Tidak Hadir" ? "absent" : "not_yet",
+          checkIn: formatDateTime(attendanceDetail.data.InTime),
+          checkOut: formatDateTime(attendanceDetail.data.OutTime),
+          duration: attendanceDetail.data.Duration ? `${attendanceDetail.data.Duration} jam` : undefined,
+          location: {
+            address: `${attendanceDetail.data.LocationName}, ${attendanceDetail.data.Address}`
+          }
+        });
+      } catch (error) {
+        console.error('Error fetching profile:', error);
+      }
+    };
+
+    fetchProfile();
+  }, []);
+
   const handleCheckIn = async () => {
     try {
-      setIsCheckingIn(true);
+      setIsCheckingIn(true); // Set loading state ke true
       // Dapatkan lokasi saat ini
       const currentPosition = await new Promise<GeolocationPosition>(
         (resolve, reject) => {
@@ -77,6 +82,8 @@ export default function DashboardPage() {
     } catch (error) {
       console.error("Error during check-in:", error);
       toast.error("Gagal mengakses kamera atau lokasi");
+    } finally {
+      setIsCheckingIn(false); // Set loading state ke false setelah selesai
     }
   };
 
@@ -165,9 +172,6 @@ export default function DashboardPage() {
             .replace(/\./g, ":"),
           duration: durationStr,
           location: {
-            ...prev.location!,
-            latitude: position.coords.latitude,
-            longitude: position.coords.longitude,
             address: "Akan diisi dari hasil geocoding",
           },
         }));
@@ -233,8 +237,6 @@ export default function DashboardPage() {
             })
             .replace(/\./g, ":"),
           location: {
-            latitude: position.coords.latitude,
-            longitude: position.coords.longitude,
             address: "Akan diisi dari hasil geocoding",
           },
         }));
@@ -371,29 +373,6 @@ export default function DashboardPage() {
                 </h3>
                 {attendance.location ? (
                   <>
-                    <div className="mt-4 h-60 w-full rounded-lg bg-black/40 ring-1 ring-yellow-500/20 overflow-hidden">
-                      <MapContainer
-                        center={[
-                          attendance.location.latitude,
-                          attendance.location.longitude,
-                        ]}
-                        zoom={16}
-                        style={{ height: "100%", width: "100%" }}
-                      >
-                        <TileLayer
-                          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                        />
-                        <Marker
-                          position={[
-                            attendance.location.latitude,
-                            attendance.location.longitude,
-                          ]}
-                        >
-                          <Popup>Lokasi Absen</Popup>
-                        </Marker>
-                      </MapContainer>
-                    </div>
                     <p className="mt-3 text-xs text-zinc-400">
                       {attendance.location.address}
                     </p>

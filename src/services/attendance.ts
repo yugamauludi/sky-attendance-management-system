@@ -1,12 +1,12 @@
 import { getSignature } from "./signature";
 
 interface SummaryData {
-    Karyawan: number;
-    Hadir: number;
-    Izin: number;
-    Sakit: number;
-    Cuti: number;
-    Absen: number;
+  Karyawan: number;
+  Hadir: number;
+  Izin: number;
+  Sakit: number;
+  Cuti: number;
+  Absen: number;
 }
 
 interface AttendanceData {
@@ -78,10 +78,8 @@ interface CheckInResponse {
     Id: string;
     UserId: string;
     InTime: string;
-    // ... tambahkan field lain sesuai kebutuhan
   };
 }
-
 
 export const checkInAttendance = async (data: {
   latitude: string;
@@ -159,36 +157,43 @@ export const checkOutAttendance = async ({
   }
 };
 
-
 export interface AttendanceDetailResponse {
   code: number;
   message: string;
   data: {
-    id: number;
-    userId: string;
-    checkIn: string;
-    checkOut: string | null;
-    duration: string | null;
-    status: string;
-    location: {
-      latitude: number;
-      longitude: number;
-      address: string;
-    };
-    photo: {
-      checkIn: string;
-      checkOut: string | null;
-    };
-    notes: string | null;
+    Id: number;
+    UserId: string;
+    Date: string;
+    LocationName: string;
+    Address: string;
+    InTime: string;
+    OutTime: string;
+    Duration: number;
+    Status: string;
+    Description: string;
   };
 }
 
-export const getAttendanceDetail = async (id: string): Promise<AttendanceDetailResponse> => {
+export const getAttendanceDetail = async (): Promise<AttendanceDetailResponse> => {
   try {
-    const response = await fetch(`/api/attendance/detail/${id}`);
+    const { timestamp, signature } = await getSignature();
+    const token = document.cookie.split('; ').find(row => row.startsWith('token='))?.split('=')[1] || '';
+
+    const response = await fetch(`/api/attendance/detail`, {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'x-timestamp': timestamp,
+        'x-signature': signature,
+        'Authorization': `Bearer ${token}`
+      },
+      credentials: 'include',
+    });
 
     if (!response.ok) {
-      throw new Error("Gagal mengambil detail attendance");
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Gagal mendapatkan detail karyawan');
     }
 
     const data = await response.json();

@@ -9,6 +9,7 @@ import Link from "next/link";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { getAllAttendance } from "@/services/attendance";
+import { formatDateTime } from "@/utiils/dateFormatter";
 
 export interface EmployeeAttendance {
   id: string;
@@ -169,45 +170,9 @@ export default function HRDashboardPage() {
           day: "numeric",
         });
       case "checkIn":
-        if (!attendance.checkIn) return "-";
-
-        const checkInDate = new Date(attendance.checkIn);
-        const dayIn = String(checkInDate.getUTCDate()).padStart(2, "0");
-        const monthIn = checkInDate.toLocaleString("id-ID", {
-          month: "long",
-          timeZone: "UTC",
-        });
-        const yearIn = checkInDate.getUTCFullYear();
-        const weekdayIn = checkInDate.toLocaleString("id-ID", {
-          weekday: "long",
-          timeZone: "UTC",
-        });
-
-        const hoursIn = String(checkInDate.getUTCHours()).padStart(2, "0");
-        const minutesIn = String(checkInDate.getUTCMinutes()).padStart(2, "0");
-        const secondsIn = String(checkInDate.getUTCSeconds()).padStart(2, "0");
-
-        return `${weekdayIn}, ${dayIn} ${monthIn} ${yearIn} ${hoursIn}.${minutesIn}.${secondsIn}`;
+        return formatDateTime(attendance.checkIn);
       case "checkOut":
-        if (!attendance.checkOut) return "-";
-
-        const checkOutDate = new Date(attendance.checkOut);
-        const day = String(checkOutDate.getUTCDate()).padStart(2, "0");
-        const month = checkOutDate.toLocaleString("id-ID", {
-          month: "long",
-          timeZone: "UTC",
-        });
-        const year = checkOutDate.getUTCFullYear();
-        const weekday = checkOutDate.toLocaleString("id-ID", {
-          weekday: "long",
-          timeZone: "UTC",
-        });
-
-        const hours = String(checkOutDate.getUTCHours()).padStart(2, "0");
-        const minutes = String(checkOutDate.getUTCMinutes()).padStart(2, "0");
-        const seconds = String(checkOutDate.getUTCSeconds()).padStart(2, "0");
-
-        return `${weekday}, ${day} ${month} ${year} ${hours}.${minutes}.${seconds}`;
+        return formatDateTime(attendance.checkOut);
       case "status":
         return (
           <span
@@ -549,7 +514,7 @@ export default function HRDashboardPage() {
               totalPages={(pagination as any).totalPages}
               onPageChange={setCurrentPage}
               itemsPerPage={itemsPerPage}
-              totalItems={(pagination as any).totalItems} // Cast pagination to any to access totalItems
+              totalItems={(pagination as any).totalItems}
             />
           </div>
         </div>

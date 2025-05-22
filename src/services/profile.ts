@@ -43,7 +43,7 @@ export const getUserProfile = async (): Promise<UserProfile> => {
     const { timestamp, signature } = await getSignature();
     const token = document.cookie.split('; ').find(row => row.startsWith('token='))?.split('=')[1] || '';
 
-    const response = await fetch(`/api/users/profile?id=${"78219e88-f815-4265-a508-e66b211dfd4a"}`, {
+    const response = await fetch(`/api/users/profile?id=${userId}`, {
       method: 'GET',
       headers: {
         'Accept': 'application/json',
@@ -60,9 +60,7 @@ export const getUserProfile = async (): Promise<UserProfile> => {
       throw new Error(errorData.message || 'Gagal mendapatkan data profil');
     }
 
-    const apiData = await response.json();
-    console.log(apiData.data, "apiData");
-    
+    const apiData = await response.json();    
     
     // Transform API response ke format UserProfile
     const transformedData: UserProfile = {
