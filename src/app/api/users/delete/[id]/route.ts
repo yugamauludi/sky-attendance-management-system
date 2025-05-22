@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-export async function DELETE(
+export const DELETE = async (
   request: NextRequest,
   { params }: { params: { id: string } }
-) {
+) => {
   try {
     const id = params.id;
     const timestamp = request.headers.get('x-timestamp');
