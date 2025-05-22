@@ -14,7 +14,11 @@ const DetailModal: React.FC<EmployeeDetail> = ({
   onClose,
 }) => {
   if (!isOpen || !employee) return null;
-  const baseUrl = process.env.NEXT_PUBLIC_API_URL;  
+  // Hapus baseUrl yang terekspos
+  const imageUrl = (path: string) => {
+    if (!path) return '';
+    return `/api/proxy/image?path=${encodeURIComponent(path)}`;
+  };
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 pb-24">
@@ -51,7 +55,7 @@ const DetailModal: React.FC<EmployeeDetail> = ({
               <Image
                 width={400}
                 height={225}
-                src={`${baseUrl}/${employee.pathIn}`}
+                src={imageUrl(employee.pathIn)}
                 alt="Foto Check-in"
                 className="rounded-xl object-cover"
               />
@@ -62,7 +66,7 @@ const DetailModal: React.FC<EmployeeDetail> = ({
                 <Image
                   width={400}
                   height={225}
-                  src={`${baseUrl}/${employee.pathOut}`}
+                  src={imageUrl(employee.pathOut)}
                   alt="Foto Check-out"
                   className="rounded-xl object-cover"
                 />
