@@ -1,19 +1,25 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { getSignature, getSignatureAddUser } from "./signature";
 
-interface Role {
-  Name: string;
-}
-
 interface Employee {
   Id: string;
-  Username: string;
-  Email: string;
-  RoleId: number;
+  UserId: string;
+  NIK: string;
+  Name: string;
+  Departement: string;
+  Divisi: string;
+  Address: string;
+  NoTlp: string;
+  LocationCode: string;
+  StatusKaryawan: string;
+  Status: string;
+  CreatedBy: string;
   CreatedAt: string;
   UpdatedAt: string;
+  UpdatedBy: string | null;
+  DeletedAt: string | null;
+  DeletedBy: string | null;
   Record: string;
-  role: Role;
 }
 
 interface EmployeeResponse {
@@ -35,7 +41,7 @@ export const getAllEmployees = async (): Promise<Employee[]> => {
 
     const token = document.cookie.split('; ').find(row => row.startsWith('token='))?.split('=')[1] || '';
 
-    const response = await fetch('/api/users/get-all', {
+    const response = await fetch('/api/detail-users/get-all', {
       method: 'GET',
       headers: {
         'Accept': 'application/json',
@@ -94,9 +100,9 @@ export const addEmployee = async (employeeData: any) => {
   try {
     // Dapatkan signature terlebih dahulu
     const { timestamp, signature } = await getSignatureAddUser(employeeData);
-    
+
     const token = document.cookie.split('; ').find(row => row.startsWith('token='))?.split('=')[1] || '';
-    
+
     const response = await fetch('/api/users/create', {
       method: 'POST',
       headers: {

@@ -12,51 +12,57 @@ import { toast } from "react-hot-toast";
 const mapApiEmployeeToEmployee = (apiEmployee: any): Employee => {
   return {
     id: apiEmployee.Id,
-    name: apiEmployee.Username,
+    name: apiEmployee.Name,
     email: apiEmployee.Email,
-    gender: '',
-    idNumber: '',
-    birthPlace: '',
-    birthDate: new Date().toISOString(),
-    address: '',
-    position: apiEmployee.role?.Name || '',
-    department: '',
-    joinDate: apiEmployee.CreatedAt,
-    phoneNumber: '',
-    location: ''
+    gender: apiEmployee.StatusKaryawan,
+    idNumber: apiEmployee.NIK,
+    birthPlace: "",
+    birthDate: "",
+    address: apiEmployee.Address,
+    position: apiEmployee.Divisi,
+    department: apiEmployee.Departement,
+    joinDate: "",
+    phoneNumber: apiEmployee.NoTlp,
+    location: apiEmployee.LocationCode,
   };
 };
 
 export default function EmployeeListPage() {
   const [employees, setEmployees] = useState<Employee[]>([]);
-  
+
   useEffect(() => {
     const fetchEmployees = async () => {
       try {
         const apiEmployees = await getAllEmployees();
+        console.log(apiEmployees, "<<<api employees");
+
         const mappedEmployees = apiEmployees.map(mapApiEmployeeToEmployee);
         setEmployees(mappedEmployees);
       } catch (error) {
-        console.error('Error fetching employees:', error);
+        console.error("Error fetching employees:", error);
       }
     };
-    
+
     fetchEmployees();
   }, []);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
+  const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(
+    null
+  );
   const [isConfirmationOpen, setIsConfirmationOpen] = useState(false);
-  const [employeeToDelete, setEmployeeToDelete] = useState<Employee | null>(null);
+  const [employeeToDelete, setEmployeeToDelete] = useState<Employee | null>(
+    null
+  );
 
   const handleDelete = async (id: string) => {
     try {
       await deleteEmployee(id);
-      setEmployees(employees.filter(employee => employee.id !== id));
+      setEmployees(employees.filter((employee) => employee.id !== id));
       setIsConfirmationOpen(false);
       toast.success("Data karyawan berhasil dihapus");
     } catch (error) {
-      console.error('Error deleting employee:', error);
+      console.error("Error deleting employee:", error);
       toast.error("Gagal menghapus data karyawan");
     }
   };
@@ -96,8 +102,8 @@ export default function EmployeeListPage() {
         setEmployees(mappedEmployees);
         setError(null);
       } catch (error) {
-        setError('Gagal memuat data karyawan');
-        console.error('Error fetching employees:', error);
+        setError("Gagal memuat data karyawan");
+        console.error("Error fetching employees:", error);
       } finally {
         setIsLoading(false);
       }
@@ -159,9 +165,11 @@ export default function EmployeeListPage() {
                 <h3 className="text-lg sm:text-xl font-semibold text-yellow-400">
                   Detail Karyawan
                 </h3>
-                <p className="text-xs sm:text-sm text-zinc-400">Data lengkap karyawan</p>
+                <p className="text-xs sm:text-sm text-zinc-400">
+                  Data lengkap karyawan
+                </p>
               </div>
-              <button 
+              <button
                 onClick={() => setSelectedEmployee(null)}
                 className="text-zinc-400 hover:text-white cursor-pointer"
               >
@@ -193,23 +201,34 @@ export default function EmployeeListPage() {
                 </div>
                 <div>
                   <p className="text-xs text-zinc-400">Jenis Kelamin</p>
-                  <p className="text-sm text-white">{selectedEmployee.gender}</p>
+                  <p className="text-sm text-white">
+                    {selectedEmployee.gender}
+                  </p>
                 </div>
                 <div>
                   <p className="text-xs text-zinc-400">Nomor KTP</p>
-                  <p className="text-sm text-white">{selectedEmployee.idNumber}</p>
+                  <p className="text-sm text-white">
+                    {selectedEmployee.idNumber}
+                  </p>
                 </div>
                 <div>
                   <p className="text-xs text-zinc-400">Tempat Lahir</p>
-                  <p className="text-sm text-white">{selectedEmployee.birthPlace}</p>
+                  <p className="text-sm text-white">
+                    {selectedEmployee.birthPlace}
+                  </p>
                 </div>
                 <div>
                   <p className="text-xs text-zinc-400">Tanggal Lahir</p>
-                  <p className="text-sm text-white">{new Date(selectedEmployee.birthDate).toLocaleDateString('id-ID', {
-                    day: 'numeric',
-                    month: 'long',
-                    year: 'numeric'
-                  })}</p>
+                  <p className="text-sm text-white">
+                    {new Date(selectedEmployee.birthDate).toLocaleDateString(
+                      "id-ID",
+                      {
+                        day: "numeric",
+                        month: "long",
+                        year: "numeric",
+                      }
+                    )}
+                  </p>
                 </div>
               </div>
 
@@ -220,27 +239,40 @@ export default function EmployeeListPage() {
                 </div>
                 <div>
                   <p className="text-xs text-zinc-400">Alamat</p>
-                  <p className="text-sm text-white">{selectedEmployee.address}</p>
+                  <p className="text-sm text-white">
+                    {selectedEmployee.address}
+                  </p>
                 </div>
                 <div>
                   <p className="text-xs text-zinc-400">Jabatan</p>
-                  <p className="text-sm text-white">{selectedEmployee.position}</p>
+                  <p className="text-sm text-white">
+                    {selectedEmployee.position}
+                  </p>
                 </div>
                 <div>
                   <p className="text-xs text-zinc-400">Departemen</p>
-                  <p className="text-sm text-white">{selectedEmployee.department}</p>
+                  <p className="text-sm text-white">
+                    {selectedEmployee.department}
+                  </p>
                 </div>
                 <div>
                   <p className="text-xs text-zinc-400">Tanggal Bergabung</p>
-                  <p className="text-sm text-white">{new Date(selectedEmployee.joinDate).toLocaleDateString('id-ID', {
-                    day: 'numeric',
-                    month: 'long',
-                    year: 'numeric'
-                  })}</p>
+                  <p className="text-sm text-white">
+                    {new Date(selectedEmployee.joinDate).toLocaleDateString(
+                      "id-ID",
+                      {
+                        day: "numeric",
+                        month: "long",
+                        year: "numeric",
+                      }
+                    )}
+                  </p>
                 </div>
                 <div>
                   <p className="text-xs text-zinc-400">Nomor Telepon</p>
-                  <p className="text-sm text-white">{selectedEmployee.phoneNumber}</p>
+                  <p className="text-sm text-white">
+                    {selectedEmployee.phoneNumber}
+                  </p>
                 </div>
               </div>
             </div>

@@ -41,8 +41,8 @@ const mapApiEmployeeToEmployee = (apiAttendance: any): EmployeeAttendance => {
     checkOut: apiAttendance.OutTime,
     duration: apiAttendance.Duration,
     status: apiAttendance.Status,
-    pathIn: apiAttendance.PathIn,
-    pathOut: apiAttendance.PathOut,
+    pathIn: apiAttendance.pathIn,
+    pathOut: apiAttendance.pathOut,
     notes: apiAttendance.Description,
   };
 };

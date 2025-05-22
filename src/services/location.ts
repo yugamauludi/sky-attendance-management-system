@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { getSignature } from "./signature";
 
 export interface Location {
@@ -53,3 +54,36 @@ export const getAllLocations = async (): Promise<Location[]> => {
         throw error;
     }
 };
+
+export const addLocation = async (locationData: any) => {
+    try {
+      // Dapatkan signature terlebih dahulu
+      const { timestamp, signature } = await getSignature();
+      
+      const token = document.cookie.split('; ').find(row => row.startsWith('token='))?.split('=')[1] || '';
+      
+      const response = await fetch('/api/location/create', {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+          'x-timestamp': timestamp,
+          'x-signature': signature,
+          'Authorization': `Bearer ${token}`
+        },
+        credentials: "include",
+        body: JSON.stringify(locationData)
+      });
+      console.log("RESPONSE: ", response);
+  
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Gagal menambahkan karyawan');
+      }
+  
+      return await response.json();
+    } catch (error) {
+      console.error('Error adding employee:', error);
+      throw error;
+    }
+  };

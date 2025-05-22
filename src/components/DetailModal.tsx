@@ -1,5 +1,6 @@
 import React from "react";
 import { EmployeeAttendance } from "@/app/(authenticated)/dashboard/hr/page";
+import Image from "next/image";
 
 interface EmployeeDetail {
   isOpen: boolean;
@@ -13,6 +14,7 @@ const DetailModal: React.FC<EmployeeDetail> = ({
   onClose,
 }) => {
   if (!isOpen || !employee) return null;
+  console.log(employee, "<<employee.pathIn");
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 pb-24">
@@ -40,32 +42,33 @@ const DetailModal: React.FC<EmployeeDetail> = ({
             </svg>
           </button>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-          {/* Foto Profile & Info */}
-          <div className="space-y-2 sm:space-y-4">
-            <div className="aspect-square rounded-xl bg-black/40 flex items-center justify-center">
-              <span className="text-zinc-400">Foto Profile</span>
-            </div>
-            <div className="space-y-1 sm:space-y-2">
-              <h4 className="font-medium text-white">
-                {employee.name}
-              </h4>
-              <p className="text-xs sm:text-sm text-zinc-400">
-                Jabatan: Software Engineer
-              </p>
-            </div>
-          </div>
+        <div className="gap-4">
 
-          {/* Foto Bukti/Lokasi */}
-          <div className="space-y-2 sm:space-y-4">
+          {/* Foto Check-in & Check-out */}
+          <div className="grid grid-cols-2 gap-4">
             <div className="aspect-video rounded-xl bg-black/40 flex items-center justify-center">
-              <span className="text-zinc-400">
-                {employee.status === "Sakit"
-                  ? "Surat Dokter"
-                  : employee.status === "Cuti"
-                  ? "Approval Cuti"
-                  : "Foto Lokasi"}
-              </span>
+              <Image
+                width={400}
+                height={225}
+                src={`https://devtest08.skyparking.online/${employee.pathIn}`}
+                alt="Foto Check-in"
+                className="rounded-xl object-cover"
+              />
+              {/* <p className="text-xs sm:text-sm text-zinc-400">Foto Check-in</p> */}
+            </div>
+            <div className="aspect-video rounded-xl bg-black/40 flex items-center justify-center">
+              {employee.pathOut ? (
+                <Image
+                  width={400}
+                  height={225}
+                  src={`https://devtest08.skyparking.online/${employee.pathOut}`}
+                  alt=" Foto Check-out"
+                  className="rounded-xl object-cover"
+                />
+              ) : (
+                <span className="text-zinc-400">Belum</span>
+              )}
+              <p className="text-xs sm:text-sm text-zinc-400">Foto Check-out</p>
             </div>
           </div>
 
