@@ -16,36 +16,23 @@ import { toast } from "react-hot-toast";
 const mapApiEmployeeToEmployee = (apiEmployee: any): Employee => {
   return {
     id: apiEmployee.Id,
+    userId: apiEmployee.NIK,
     name: apiEmployee.Name,
     gender: apiEmployee.StatusKaryawan,
-    idNumber: apiEmployee.NIK,
+    idNumber: apiEmployee.KTPNo,
     address: apiEmployee.Address,
     position: apiEmployee.Divisi,
     department: apiEmployee.Departement,
-    joinDate: "",
     phoneNumber: apiEmployee.NoTlp,
     location: apiEmployee.LocationCode,
+    employeeStatus: apiEmployee.StatusKaryawan,
+    birthDate: apiEmployee.DOB,
+    nik: apiEmployee.NIK,
   };
 };
 
 export default function EmployeeListPage() {
   const [employees, setEmployees] = useState<Employee[]>([]);
-
-  // useEffect(() => {
-  //   const fetchEmployees = async () => {
-  //     try {
-  //       const apiEmployees = await getAllEmployees();
-  //       console.log(apiEmployees, "<<<api employees");
-
-  //       const mappedEmployees = apiEmployees.data.map(mapApiEmployeeToEmployee);
-  //       setEmployees(mappedEmployees);
-  //     } catch (error) {
-  //       console.error("Error fetching employees:", error);
-  //     }
-  //   };
-
-  //   fetchEmployees();
-  // }, []);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(
@@ -153,14 +140,16 @@ export default function EmployeeListPage() {
         id: detailData.Id,
         userId: detailData.UserId,
         name: detailData.Name,
-        gender: detailData.StatusKaryawan,
-        idNumber: detailData.NIK,
+        gender: detailData.Gender,
+        idNumber: detailData.KTPNo,
         address: detailData.Address,
         position: detailData.Divisi,
         department: detailData.Departement,
-        joinDate: detailData.CreatedAt,
         phoneNumber: detailData.NoTlp,
         location: detailData.LocationCode,
+        employeeStatus: detailData.StatusKaryawan,
+        birthDate: detailData.DOB,
+        nik: detailData.NIK,
       };
 
       setSelectedEmployee(updatedEmployee);
@@ -199,7 +188,7 @@ export default function EmployeeListPage() {
             </div>
             <DataTable
               columns={[
-                { key: "id", label: "ID Karyawan" },
+                { key: "userId", label: "ID Karyawan" },
                 { key: "name", label: "Nama" },
                 { key: "position", label: "Jabatan" },
                 { key: "department", label: "Departemen" },
@@ -254,7 +243,7 @@ export default function EmployeeListPage() {
               <div className="space-y-3">
                 <div>
                   <p className="text-xs text-zinc-400">ID Karyawan</p>
-                  <p className="text-sm text-white">{selectedEmployee.id}</p>
+                  <p className="text-sm text-white">{selectedEmployee.nik}</p>
                 </div>
                 <div>
                   <p className="text-xs text-zinc-400">Nama Lengkap</p>
@@ -272,19 +261,13 @@ export default function EmployeeListPage() {
                     {selectedEmployee.idNumber}
                   </p>
                 </div>
-                <div>
-                  <p className="text-xs text-zinc-400">Alamat</p>
-                  <p className="text-sm text-white">
-                    {selectedEmployee.address}
-                  </p>
-                </div>
                 {/* <div>
                   <p className="text-xs text-zinc-400">Tempat Lahir</p>
                   <p className="text-sm text-white">
                     {selectedEmployee.birthPlace}
                   </p>
                 </div> */}
-                {/* <div>
+                <div>
                   <p className="text-xs text-zinc-400">Tanggal Lahir</p>
                   <p className="text-sm text-white">
                     {new Date(selectedEmployee.birthDate).toLocaleDateString(
@@ -296,7 +279,7 @@ export default function EmployeeListPage() {
                       }
                     )}
                   </p>
-                </div> */}
+                </div>
               </div>
 
               <div className="space-y-3">
@@ -304,6 +287,12 @@ export default function EmployeeListPage() {
                   <p className="text-xs text-zinc-400">Email</p>
                   <p className="text-sm text-white">{selectedEmployee.email}</p>
                 </div> */}
+                <div>
+                  <p className="text-xs text-zinc-400">Alamat</p>
+                  <p className="text-sm text-white">
+                    {selectedEmployee.address}
+                  </p>
+                </div>
                 <div>
                   <p className="text-xs text-zinc-400">Jabatan</p>
                   <p className="text-sm text-white">
@@ -316,7 +305,7 @@ export default function EmployeeListPage() {
                     {selectedEmployee.department}
                   </p>
                 </div>
-                <div>
+                {/* <div>
                   <p className="text-xs text-zinc-400">Tanggal Bergabung</p>
                   <p className="text-sm text-white">
                     {new Date(selectedEmployee.joinDate).toLocaleDateString(
@@ -328,7 +317,7 @@ export default function EmployeeListPage() {
                       }
                     )}
                   </p>
-                </div>
+                </div> */}
                 <div>
                   <p className="text-xs text-zinc-400">Nomor Telepon</p>
                   <p className="text-sm text-white">

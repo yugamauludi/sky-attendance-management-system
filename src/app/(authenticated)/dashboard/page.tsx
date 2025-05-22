@@ -1,12 +1,16 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import Background from "@/components/Background";
 import { useState, useRef, useEffect } from "react";
 import Modal from "@/components/Modal";
 import toast from "react-hot-toast";
-import { checkInAttendance, checkOutAttendance, getAttendanceDetail } from "@/services/attendance";
+import {
+  checkInAttendance,
+  checkOutAttendance,
+  getAttendanceDetail,
+} from "@/services/attendance";
 import { formatDateTime } from "@/utiils/dateFormatter";
-
 
 interface AttendanceStatus {
   status: "present" | "absent" | "not_yet";
@@ -35,21 +39,27 @@ export default function DashboardPage() {
     const fetchProfile = async () => {
       try {
         const attendanceDetail = await getAttendanceDetail();
-        console.log(attendanceDetail, '<<<<<cek iniii');
-        
+        console.log(attendanceDetail, "<<<<<cek iniii");
+
         // Set state attendance with data from response
         setAttendance({
-          status: attendanceDetail.data.Status === "Hadir" ? "present" : 
-                attendanceDetail.data.Status === "Tidak Hadir" ? "absent" : "not_yet",
+          status:
+            attendanceDetail.data.Status === "Hadir"
+              ? "present"
+              : attendanceDetail.data.Status === "Tidak Hadir"
+              ? "absent"
+              : "not_yet",
           checkIn: formatDateTime(attendanceDetail.data.InTime),
           checkOut: formatDateTime(attendanceDetail.data.OutTime),
-          duration: attendanceDetail.data.Duration ? `${attendanceDetail.data.Duration} jam` : undefined,
+          duration: attendanceDetail.data.Duration
+            ? `${attendanceDetail.data.Duration} jam`
+            : undefined,
           location: {
-            address: `${attendanceDetail.data.LocationName}, ${attendanceDetail.data.Address}`
-          }
+            address: `${attendanceDetail.data.LocationName}, ${attendanceDetail.data.Address}`,
+          },
         });
       } catch (error) {
-        console.error('Error fetching profile:', error);
+        console.error("Error fetching profile:", error);
       }
     };
 
@@ -74,7 +84,7 @@ export default function DashboardPage() {
           facingMode: "user",
         },
       });
-  
+
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
         await videoRef.current.play();
@@ -82,8 +92,6 @@ export default function DashboardPage() {
     } catch (error) {
       console.error("Error during check-in:", error);
       toast.error("Gagal mengakses kamera atau lokasi");
-    } finally {
-      setIsCheckingIn(false); // Set loading state ke false setelah selesai
     }
   };
 
@@ -126,13 +134,19 @@ export default function DashboardPage() {
       canvas.height = videoRef.current.videoHeight;
       canvas.getContext("2d")?.drawImage(videoRef.current, 0, 0);
       const blob = await new Promise<Blob>((resolve) => {
-        canvas.toBlob((blob) => {
-          if (blob) resolve(blob);
-        }, 'image/jpeg', 0.95);
+        canvas.toBlob(
+          (blob) => {
+            if (blob) resolve(blob);
+          },
+          "image/jpeg",
+          0.95
+        );
       });
 
       // Buat file dari blob
-      const photoFile = new File([blob], 'check-out-photo.jpg', { type: 'image/jpeg' });
+      const photoFile = new File([blob], "check-out-photo.jpg", {
+        type: "image/jpeg",
+      });
 
       // Hitung durasi kerja
       const today = new Date().toISOString().split("T")[0];
@@ -155,7 +169,7 @@ export default function DashboardPage() {
       const response = await checkOutAttendance({
         latitude: position.coords.latitude.toString(),
         longitude: position.coords.longitude.toString(),
-        photo: photoFile
+        photo: photoFile,
       });
 
       if (response.code === 210002) {
@@ -208,19 +222,25 @@ export default function DashboardPage() {
       canvas.height = videoRef.current.videoHeight;
       canvas.getContext("2d")?.drawImage(videoRef.current, 0, 0);
       const blob = await new Promise<Blob>((resolve) => {
-        canvas.toBlob((blob) => {
-          if (blob) resolve(blob);
-        }, 'image/jpeg', 0.95);
+        canvas.toBlob(
+          (blob) => {
+            if (blob) resolve(blob);
+          },
+          "image/jpeg",
+          0.95
+        );
       });
 
       // Buat file dari blob
-      const photoFile = new File([blob], 'check-in-photo.jpg', { type: 'image/jpeg' });
+      const photoFile = new File([blob], "check-in-photo.jpg", {
+        type: "image/jpeg",
+      });
 
       // Kirim data check-in ke API
       const response = await checkInAttendance({
         latitude: position.coords.latitude.toString(),
         longitude: position.coords.longitude.toString(),
-        photo: photoFile
+        photo: photoFile,
       });
 
       if (response.code === 210002) {
@@ -244,25 +264,28 @@ export default function DashboardPage() {
         // Set pesan modal setelah check-in berhasil
         setModalMessage("Selamat bekerja! Anda telah berhasil check-in.");
         setIsModalOpen(true);
-        toast.success("Berhasil melakukan check-in");
       }
-
       // Matikan kamera
       if (videoRef.current?.srcObject) {
         const tracks = (videoRef.current.srcObject as MediaStream).getTracks();
         tracks.forEach((track) => track.stop());
       }
       setShowCamera(false);
-    } catch (error) {
+    } catch (error: any) { // Tambahkan type any untuk mengakses message
       console.error("Error during photo capture:", error);
-      toast.error("Gagal melakukan check-in");
-      setModalMessage("Gagal melakukan check-in. Silakan coba lagi.");
+      if (error.message === "Kamu sudah lakukan absen masuk") {
+        setModalMessage("Kamu sudah melakukan absen masuk");
+      } else {
+        setModalMessage("Gagal melakukan check-in. Silakan coba lagi.");
+      }
       setIsModalOpen(true);
+      setShowCamera(false);
+      if (videoRef.current?.srcObject) {
+        const tracks = (videoRef.current.srcObject as MediaStream).getTracks();
+        tracks.forEach((track) => track.stop());
+      }
     }
   };
-
-  console.log(attendance, "<<<<ini attendance");
-  
 
   return (
     <div className="min-h-screen bg-[#1a1a1a]">
@@ -316,8 +339,8 @@ export default function DashboardPage() {
                 <button
                   className="px-4 py-2 font-medium rounded-lg transition-colors cursor-pointer bg-red-500 hover:bg-red-600 text-white"
                   onClick={() => {
-                    setShowConfirmation(true)
-                    setIsCheckingIn(false)
+                    setShowConfirmation(true);
+                    setIsCheckingIn(false);
                   }}
                 >
                   Check Out
@@ -440,10 +463,14 @@ export default function DashboardPage() {
                 Batal
               </button>
               <button
-                onClick={isCheckingIn ? handleCapturePhoto : handleCaptureCheckOutPhoto}
+                onClick={
+                  isCheckingIn ? handleCapturePhoto : handleCaptureCheckOutPhoto
+                }
                 className="px-4 py-2 text-sm font-medium bg-yellow-500 text-black hover:bg-yellow-600 rounded-lg transition-colors cursor-pointer"
               >
-                {!isCheckingIn ? "Ambil Foto & Check Out" : "Ambil Foto & Check In"}
+                {!isCheckingIn
+                  ? "Ambil Foto & Check Out"
+                  : "Ambil Foto & Check In"}
               </button>
             </div>
           </div>

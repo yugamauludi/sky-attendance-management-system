@@ -137,8 +137,12 @@ interface EmployeeDetailResponse {
   data: {
     Id: string;
     UserId: string;
+    KTPNo: string;
     NIK: string;
     Name: string;
+    DOB: string;
+    Gender: string;
+    JoinDate: string;
     Departement: string;
     Divisi: string;
     Address: string;
