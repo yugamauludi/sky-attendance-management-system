@@ -35,13 +35,13 @@ interface EmployeeResponse {
 }
 
 
-export const getAllEmployees = async (): Promise<Employee[]> => {
+export const getAllEmployees = async (page = 1, limit = 10): Promise<EmployeeResponse> => {
   try {
     const { timestamp, signature } = await getSignature();
 
     const token = document.cookie.split('; ').find(row => row.startsWith('token='))?.split('=')[1] || '';
 
-    const response = await fetch('/api/detail-users/get-all', {
+    const response = await fetch(`/api/detail-users/get-all?page=${page}&limit=${limit}`, {
       method: 'GET',
       headers: {
         'Accept': 'application/json',
@@ -65,7 +65,7 @@ export const getAllEmployees = async (): Promise<Employee[]> => {
       throw new Error('Format data tidak valid');
     }
 
-    return responseData.data;
+    return responseData;
   } catch (error) {
     console.error('Error fetching employees:', error);
     throw error;

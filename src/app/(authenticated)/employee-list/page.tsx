@@ -1,14 +1,18 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useState, useEffect } from "react";
 import { DataTable } from "@/components/DataTable";
 import { ConfirmationModal } from "@/components/ConfirmationModal";
 import Background from "@/components/Background";
-import { deleteEmployee, getAllEmployees, getEmployeeDetail } from "@/services/employees";
+import {
+  deleteEmployee,
+  getAllEmployees,
+  getEmployeeDetail,
+} from "@/services/employees";
 import { Employee } from "@/types/employee";
 import { toast } from "react-hot-toast";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const mapApiEmployeeToEmployee = (apiEmployee: any): Employee => {
   return {
     id: apiEmployee.Id,
@@ -27,21 +31,21 @@ const mapApiEmployeeToEmployee = (apiEmployee: any): Employee => {
 export default function EmployeeListPage() {
   const [employees, setEmployees] = useState<Employee[]>([]);
 
-  useEffect(() => {
-    const fetchEmployees = async () => {
-      try {
-        const apiEmployees = await getAllEmployees();
-        console.log(apiEmployees, "<<<api employees");
+  // useEffect(() => {
+  //   const fetchEmployees = async () => {
+  //     try {
+  //       const apiEmployees = await getAllEmployees();
+  //       console.log(apiEmployees, "<<<api employees");
 
-        const mappedEmployees = apiEmployees.map(mapApiEmployeeToEmployee);
-        setEmployees(mappedEmployees);
-      } catch (error) {
-        console.error("Error fetching employees:", error);
-      }
-    };
+  //       const mappedEmployees = apiEmployees.data.map(mapApiEmployeeToEmployee);
+  //       setEmployees(mappedEmployees);
+  //     } catch (error) {
+  //       console.error("Error fetching employees:", error);
+  //     }
+  //   };
 
-    fetchEmployees();
-  }, []);
+  //   fetchEmployees();
+  // }, []);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(
@@ -90,13 +94,20 @@ export default function EmployeeListPage() {
     }
   };
 
+  // Add these new state variables for pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [pagination, setPagination] = useState({});
+
   useEffect(() => {
     const fetchEmployees = async () => {
       try {
         setIsLoading(true);
-        const data = await getAllEmployees();
-        const mappedEmployees = data.map(mapApiEmployeeToEmployee);
+        const data = await getAllEmployees(currentPage, itemsPerPage);
+
+        const mappedEmployees = data.data.map(mapApiEmployeeToEmployee);
         setEmployees(mappedEmployees);
+        setPagination(data.meta);
         setError(null);
       } catch (error) {
         setError("Gagal memuat data karyawan");
@@ -107,7 +118,12 @@ export default function EmployeeListPage() {
     };
 
     fetchEmployees();
-  }, []);
+  }, [itemsPerPage, currentPage]);
+
+  // Add pagination handler
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
 
   if (isLoading) {
     return (
@@ -131,7 +147,7 @@ export default function EmployeeListPage() {
     try {
       const detailResponse = await getEmployeeDetail(employee.id);
       const detailData = detailResponse.data;
-      
+
       // Update employee detail dengan data dari API
       const updatedEmployee: Employee = {
         id: detailData.Id,
@@ -146,7 +162,7 @@ export default function EmployeeListPage() {
         phoneNumber: detailData.NoTlp,
         location: detailData.LocationCode,
       };
-      
+
       setSelectedEmployee(updatedEmployee);
     } catch (error) {
       console.error("Error fetching employee detail:", error);
@@ -165,6 +181,22 @@ export default function EmployeeListPage() {
           </h1>
 
           <div className="rounded-2xl bg-black/40 p-4 sm:p-6 shadow-xl ring-1 ring-yellow-500/20 backdrop-blur-lg mt-4">
+            <div className="flex justify-between items-center mb-4">
+              <div className="flex items-center space-x-2">
+                <label className="text-sm text-zinc-400">Tampilkan:</label>
+                <select
+                  value={itemsPerPage}
+                  onChange={(e) => setItemsPerPage(Number(e.target.value))}
+                  className="rounded-lg bg-black/30 px-3 py-2 text-sm text-white ring-1 ring-yellow-500/20 focus:outline-none focus:ring-2 focus:ring-yellow-500/40"
+                >
+                  <option value={10}>10</option>
+                  <option value={20}>20</option>
+                  <option value={50}>50</option>
+                  <option value={100}>100</option>
+                </select>
+                <span className="text-sm text-zinc-400">data per halaman</span>
+              </div>
+            </div>
             <DataTable
               columns={[
                 { key: "id", label: "ID Karyawan" },
@@ -176,6 +208,11 @@ export default function EmployeeListPage() {
               data={employees}
               onRowClick={handleRowClick}
               renderCell={renderEmployeeCell}
+              currentPage={currentPage}
+              totalPages={(pagination as any).totalPages}
+              onPageChange={handlePageChange}
+              itemsPerPage={itemsPerPage}
+              totalItems={(pagination as any).totalItems}
             />
           </div>
         </div>
