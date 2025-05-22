@@ -26,7 +26,6 @@ export async function POST(request: NextRequest) {
             headers["Cookie"] = `token=${token}`;
         }
 
-        // Kirim ke API backend
         const response = await fetch(
             `${process.env.API_URL}/v1/api/attendance/In`,
             {

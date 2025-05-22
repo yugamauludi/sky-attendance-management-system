@@ -12,12 +12,12 @@ import { addEmployee } from "@/services/employees";
 
 interface NewEmployee {
   name?: string;
-  userName: string; // tetap required
-  password: string; // tetap required
-  email: string; // menjadi opsional
-  position?: string; // menjadi opsional
-  employeeType?: "inhouse" | "vendor"; // menjadi opsional
-  joinDate?: Date | null; // menjadi opsional
+  userName: string;
+  password: string;
+  email: string;
+  position?: string;
+  employeeType?: "inhouse" | "vendor";
+  joinDate?: Date | null;
 }
 
 const employeeTypes = [
@@ -44,11 +44,7 @@ export default function AddEmployeePage() {
         Username: employee.userName,
         Email: employee.email,
         Password: employee.password,
-        RoleId: 1, // Sesuaikan dengan role yang diinginkan
-        // name: employee.name,
-        // position: employee.position,
-        // employeeType: employee.employeeType,
-        // joinDate: employee.joinDate ? employee.joinDate.toISOString().split('T')[0] : null,
+        RoleId: 1, 
       });
       
       router.push("/dashboard/hr");
@@ -81,7 +77,6 @@ export default function AddEmployeePage() {
       const worksheet = workbook.Sheets[sheetName];
       const data = XLSX.utils.sheet_to_json(worksheet);
       
-      // TODO: Implementasi API untuk bulk import
       console.log('Data bulk import:', data);
     };
     

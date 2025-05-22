@@ -81,7 +81,6 @@ export default function EmployeeListPage() {
     }
   };
 
-  // Add these new state variables for pagination
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [pagination, setPagination] = useState({});
@@ -107,7 +106,6 @@ export default function EmployeeListPage() {
     fetchEmployees();
   }, [itemsPerPage, currentPage]);
 
-  // Add pagination handler
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
   };

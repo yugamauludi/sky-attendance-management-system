@@ -28,7 +28,7 @@ interface UserProfile {
   phoneNumber: string;
   address: string;
   workLocation: string;
-  profileImage?: string | File; // Ubah tipe data ini
+  profileImage?: string | File;
 }
 
 export default function ProfilePage() {
@@ -81,8 +81,6 @@ export default function ProfilePage() {
     setIsEditing(true);
   };
 
-  // setProfile(editedProfile);
-  // setIsEditing(false);
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
 
@@ -91,7 +89,6 @@ export default function ProfilePage() {
       const file = e.target.files[0];
       setSelectedImage(file);
 
-      // Membuat preview image
       const reader = new FileReader();
       reader.onloadend = () => {
         setPreviewImage(reader.result as string);

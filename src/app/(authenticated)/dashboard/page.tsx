@@ -29,7 +29,6 @@ export default function DashboardPage() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [showCamera, setShowCamera] = useState(false);
   const [position, setPosition] = useState<GeolocationPosition | null>(null);
-  // const [photo, setPhoto] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalMessage, setModalMessage] = useState("");
   const [showConfirmation, setShowConfirmation] = useState(false);
@@ -40,7 +39,6 @@ export default function DashboardPage() {
       try {
         const attendanceDetail = await getAttendanceDetail();
 
-        // Set state attendance with data from response
         setAttendance({
           status:
             attendanceDetail.data.Status === "Hadir"
@@ -67,8 +65,7 @@ export default function DashboardPage() {
 
   const handleCheckIn = async () => {
     try {
-      setIsCheckingIn(true); // Set loading state ke true
-      // Dapatkan lokasi saat ini
+      setIsCheckingIn(true);
       const currentPosition = await new Promise<GeolocationPosition>(
         (resolve, reject) => {
           navigator.geolocation.getCurrentPosition(resolve, reject);
@@ -96,7 +93,7 @@ export default function DashboardPage() {
 
   const handleCheckOut = async () => {
     try {
-      // Dapatkan lokasi saat ini
+      
       const currentPosition = await new Promise<GeolocationPosition>(
         (resolve, reject) => {
           navigator.geolocation.getCurrentPosition(resolve, reject);
@@ -127,7 +124,6 @@ export default function DashboardPage() {
     try {
       if (!position || !videoRef.current) return;
 
-      // Ambil foto
       const canvas = document.createElement("canvas");
       canvas.width = videoRef.current.videoWidth;
       canvas.height = videoRef.current.videoHeight;

@@ -60,7 +60,6 @@ export default function HRDashboardPage() {
   });
 
   const [currentPage, setCurrentPage] = useState(1);
-  // const [totalPages, setTotalPages] = useState(1);
   const [pagination, setPagination] = useState({});
   const [itemsPerPage, setItemsPerPage] = useState(10);
 
@@ -76,7 +75,6 @@ export default function HRDashboardPage() {
         );
         setAttendances(mappedEmployees);
 
-        // Update stats based on summary data
         const summary = response.data[0].Summary;
         setStats({
           totalKaryawan: summary.Karyawan,
@@ -106,7 +104,6 @@ export default function HRDashboardPage() {
   });
 
   useEffect(() => {
-    // Filter data berdasarkan kriteria
     const filtered = attendances?.filter((attendance) => {
       const matchName = attendance?.name
         ?.toLowerCase()
@@ -120,11 +117,9 @@ export default function HRDashboardPage() {
       let matchDate = true;
       if (filters.startDate && filters.endDate) {
         const attendanceDate = new Date(attendance.date);
-        // Set waktu ke 00:00:00 untuk startDate
         const startDate = new Date(filters.startDate);
         startDate.setHours(0, 0, 0, 0);
 
-        // Set waktu ke 23:59:59 untuk endDate
         const endDate = new Date(filters.endDate);
         endDate.setHours(23, 59, 59, 999);
 
@@ -194,22 +189,6 @@ export default function HRDashboardPage() {
     isOpen: false,
     employee: null,
   });
-
-  useEffect(() => {
-    // TODO: Fetch data dari API
-    // Data dummy untuk tampilan
-    setAttendances([]);
-
-    // Set statistik dummy
-    setStats({
-      totalKaryawan: 50,
-      inhouse: 35,
-      vendor: 15,
-      hadir: 42,
-      sakit: 3,
-      cuti: 5,
-    });
-  }, []);
 
   return (
     <div className="min-h-screen bg-[#1a1a1a] overflow-auto">

@@ -6,7 +6,7 @@ export interface User {
 }
 
 export interface JWTPayload {
-  sub: string; // user id
+  sub: string;
   email: string;
   role: string;
   iat?: number;

@@ -45,12 +45,10 @@ export default function LeaveApprovalPage() {
   const [showDetailModal, setShowDetailModal] = useState(false);
 
   const handleApprove = async (id: string) => {
-    // TODO: Implementasi API untuk approval
     console.log("Approved leave request:", id);
   };
 
   const handleReject = async (id: string) => {
-    // TODO: Implementasi API untuk rejection
     console.log("Rejected leave request:", id);
   };
 

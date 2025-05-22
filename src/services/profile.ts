@@ -17,8 +17,6 @@ interface UserProfile {
   profileImage: string | File;
 }
 
-// Interface untuk request body edit profile
-
 export const getUserProfile = async (): Promise<UserProfile> => {
   try {
     const userId = localStorage.getItem('id');
