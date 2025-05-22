@@ -39,7 +39,6 @@ export default function DashboardPage() {
     const fetchProfile = async () => {
       try {
         const attendanceDetail = await getAttendanceDetail();
-        console.log(attendanceDetail, "<<<<<cek iniii");
 
         // Set state attendance with data from response
         setAttendance({

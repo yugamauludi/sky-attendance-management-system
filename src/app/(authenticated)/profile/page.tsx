@@ -4,8 +4,15 @@ import { useEffect, useState } from "react";
 import Background from "@/components/Background";
 import Image from "next/image";
 import { logout } from "@/services/auth";
-import { EditProfileRequest, editUserProfile, getUserProfile } from "@/services/profile";
+import {
+  EditProfileRequest,
+  editUserProfile,
+  getUserProfile,
+} from "@/services/profile";
 import toast from "react-hot-toast";
+import { formatDateUTC } from "@/utiils/dateFormatter";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 interface UserProfile {
   employeeId: string;
@@ -21,7 +28,7 @@ interface UserProfile {
   phoneNumber: string;
   address: string;
   workLocation: string;
-  profileImage?: string | File;  // Ubah tipe data ini
+  profileImage?: string | File; // Ubah tipe data ini
 }
 
 export default function ProfilePage() {
@@ -52,7 +59,7 @@ export default function ProfilePage() {
         setProfile(profileData);
         setEditedProfile(profileData);
       } catch (error) {
-        console.error('Error fetching profile:', error);
+        console.error("Error fetching profile:", error);
       } finally {
         setIsLoading(false);
       }
@@ -60,6 +67,8 @@ export default function ProfilePage() {
 
     fetchProfile();
   }, []);
+
+  console.log(profile, "<<<<profile");
 
   const handleLogout = async () => {
     try {
@@ -101,23 +110,22 @@ export default function ProfilePage() {
       }
 
       console.log(selectedImage, "<<<<selectedImage");
-      
 
       const profileData: EditProfileRequest = {
         Name: editedProfile.name,
+        Gender: editedProfile.gender,
+        KTPNo: editedProfile.idNumber,
+        BirthDate: editedProfile.birthDate,
         Address: editedProfile.address,
         NoTlp: editedProfile.phoneNumber,
-        Photo: selectedImage
+        Photo: selectedImage,
       };
-
-      console.log(profileData, "<<<<profileData");
-      
 
       await editUserProfile(profileData);
 
       setProfile({
         ...editedProfile,
-        profileImage: URL.createObjectURL(selectedImage)
+        profileImage: URL.createObjectURL(selectedImage),
       });
       setIsEditing(false);
       setSelectedImage(null);
@@ -154,6 +162,14 @@ export default function ProfilePage() {
       </div>
     );
   }
+  const handleDateChange = (date: Date | null) => {
+    if (date) {
+      setEditedProfile((prev) => ({
+        ...prev,
+        birthDate: date.toISOString(),
+      }));
+    }
+  };
 
   return (
     <div className="min-h-screen bg-[#1a1a1a]">
@@ -309,7 +325,7 @@ export default function ProfilePage() {
                       </div>
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        {/* <div>
+                        <div>
                           <label className="block text-sm text-zinc-400 mb-1">
                             Jenis Kelamin
                           </label>
@@ -322,7 +338,7 @@ export default function ProfilePage() {
                             <option value="Laki-laki">Laki-laki</option>
                             <option value="Perempuan">Perempuan</option>
                           </select>
-                        </div> */}
+                        </div>
                         <div>
                           <label className="block text-sm text-zinc-400 mb-1">
                             Nomor KTP
@@ -333,6 +349,29 @@ export default function ProfilePage() {
                             value={editedProfile.idNumber}
                             onChange={handleChange}
                             className="w-full rounded-lg border border-yellow-500/20 bg-black/20 px-3 py-2 text-white"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm text-zinc-400 mb-1">
+                            Tanggal Lahir
+                          </label>
+                          <DatePicker
+                            selected={
+                              editedProfile.birthDate
+                                ? new Date(editedProfile.birthDate)
+                                : null
+                            }
+                            onChange={handleDateChange}
+                            dateFormat="dd/MM/yyyy"
+                            className="w-full rounded-lg border border-yellow-500/20 bg-black/20 px-3 py-2 text-white"
+                            placeholderText="Pilih tanggal"
+                            showYearDropdown
+                            scrollableYearDropdown
+                            yearDropdownItemNumber={100}
+                            wrapperClassName="w-full"
                           />
                         </div>
                         <div>
@@ -348,33 +387,6 @@ export default function ProfilePage() {
                           />
                         </div>
                       </div>
-
-                      {/* <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div>
-                          <label className="block text-sm text-zinc-400 mb-1">
-                            Tempat Lahir
-                          </label>
-                          <input
-                            type="text"
-                            name="birthPlace"
-                            value={editedProfile.birthPlace}
-                            onChange={handleChange}
-                            className="w-full rounded-lg border border-yellow-500/20 bg-black/20 px-3 py-2 text-white"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm text-zinc-400 mb-1">
-                            Tanggal Lahir
-                          </label>
-                          <input
-                            type="text"
-                            name="birthDate"
-                            value={editedProfile.birthDate}
-                            onChange={handleChange}
-                            className="w-full rounded-lg border border-yellow-500/20 bg-black/20 px-3 py-2 text-white"
-                          />
-                        </div>
-                      </div> */}
 
                       {/* <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
@@ -395,7 +407,7 @@ export default function ProfilePage() {
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                           <label className="block text-sm text-zinc-400 mb-1">
-                            Jabatan
+                            Divisi
                           </label>
                           <input
                             type="text"
@@ -420,18 +432,18 @@ export default function ProfilePage() {
                       </div>
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        {/* <div>
+                        <div>
                           <label className="block text-sm text-zinc-400 mb-1">
                             Tanggal Bergabung
                           </label>
                           <input
                             type="text"
                             name="joinDate"
-                            value={editedProfile.joinDate}
+                            value={formatDateUTC(editedProfile.joinDate)}
                             className="w-full rounded-lg border border-yellow-500/20 bg-black/20 px-3 py-2 text-white opacity-75 cursor-not-allowed"
                             disabled
                           />
-                        </div> */}
+                        </div>
                         <div>
                           <label className="block text-sm text-zinc-400 mb-1">
                             Nomor Telepon
@@ -461,30 +473,28 @@ export default function ProfilePage() {
                       </div>
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        {/* <div>
+                        <div>
                           <p className="text-sm text-zinc-400">Jenis Kelamin</p>
                           <p className="text-white">{profile.gender}</p>
-                        </div> */}
+                        </div>
                         <div>
                           <p className="text-sm text-zinc-400">Nomor KTP</p>
                           <p className="text-white">{profile.idNumber}</p>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                          <p className="text-sm text-zinc-400">Tanggal Lahir</p>
+                          <p className="text-white">
+                            {formatDateUTC(profile.birthDate)}
+                          </p>
                         </div>
                         <div>
                           <p className="text-sm text-zinc-400">Alamat</p>
                           <p className="text-white">{profile.address}</p>
                         </div>
                       </div>
-
-                      {/* <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div>
-                          <p className="text-sm text-zinc-400">Tempat Lahir</p>
-                          <p className="text-white">{profile.birthPlace}</p>
-                        </div>
-                        <div>
-                          <p className="text-sm text-zinc-400">Tanggal Lahir</p>
-                          <p className="text-white">{profile.birthDate}</p>
-                        </div>
-                      </div> */}
 
                       {/* <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
@@ -496,7 +506,7 @@ export default function ProfilePage() {
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
-                          <p className="text-sm text-zinc-400">Jabatan</p>
+                          <p className="text-sm text-zinc-400">Divisi</p>
                           <p className="text-white">{profile.position}</p>
                         </div>
                         <div>
@@ -506,12 +516,14 @@ export default function ProfilePage() {
                       </div>
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        {/* <div>
+                        <div>
                           <p className="text-sm text-zinc-400">
                             Tanggal Bergabung
                           </p>
-                          <p className="text-white">{profile.joinDate}</p>
-                        </div> */}
+                          <p className="text-white">
+                            {formatDateUTC(profile.joinDate)}
+                          </p>
+                        </div>
                         <div>
                           <p className="text-sm text-zinc-400">Nomor Telepon</p>
                           <p className="text-white">{profile.phoneNumber}</p>

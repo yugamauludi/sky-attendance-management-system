@@ -18,20 +18,6 @@ interface UserProfile {
 }
 
 // Interface untuk request body edit profile
-export interface EditProfileRequest {
-//   Username: string;
-  // Email: string;
-
-//   RoleId: number;
-  Name: string;
-//   Departement: string;
-//   Divisi: string;
-  Address: string;
-  NoTlp: string;
-  Photo: File;
-//   LocationCode: string;
-//   StatusKaryawan: string;
-}
 
 export const getUserProfile = async (): Promise<UserProfile> => {
   try {
@@ -43,7 +29,7 @@ export const getUserProfile = async (): Promise<UserProfile> => {
     const { timestamp, signature } = await getSignature();
     const token = document.cookie.split('; ').find(row => row.startsWith('token='))?.split('=')[1] || '';
 
-    const response = await fetch(`/api/users/profile?id=${userId}`, {
+    const response = await fetch(`/api/users/profile?id=${"78219e88-f815-4265-a508-e66b211dfd4a"}`, {
       method: 'GET',
       headers: {
         'Accept': 'application/json',
@@ -64,16 +50,16 @@ export const getUserProfile = async (): Promise<UserProfile> => {
     
     // Transform API response ke format UserProfile
     const transformedData: UserProfile = {
-      employeeId: apiData.data.UserId,
+      employeeId: apiData.data.NIK,
       name: apiData.data.Name,
       email: '', // Tidak ada di response API
       position: apiData.data.Divisi,
       department: apiData.data.Departement,
-      gender: '', // Tidak ada di response API
-      idNumber: apiData.data.NIK,
+      gender: apiData.data.Gender, // Tidak ada di response API
+      idNumber: apiData.data.KTPNo,
       birthPlace: '', // Tidak ada di response API
-      birthDate: '', // Tidak ada di response API
-      joinDate: apiData.data.CreatedAt,
+      birthDate: apiData.data.DOB, // Tidak ada di response API
+      joinDate: apiData.data.JoinDate,
       phoneNumber: apiData.data.NoTlp,
       address: apiData.data.Address,
       workLocation: apiData.data.LocationCode,
@@ -87,7 +73,16 @@ export const getUserProfile = async (): Promise<UserProfile> => {
   }
 };
 
-// Fungsi untuk edit profile
+
+export interface EditProfileRequest {
+  Name: string;
+  Gender: string;
+  KTPNo: string;
+  BirthDate: string;
+  Address: string;
+  NoTlp: string;
+  Photo: File;
+}
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const editUserProfile = async (profileData: EditProfileRequest): Promise<any> => {
   try {
@@ -102,6 +97,9 @@ export const editUserProfile = async (profileData: EditProfileRequest): Promise<
     // Create FormData from the request data
     const formData = new FormData();
     formData.append('Name', profileData.Name);
+    formData.append('Gender', profileData.Gender);
+    formData.append('KTPNo', profileData.KTPNo);
+    formData.append('BirthDate', profileData.BirthDate);
     formData.append('Address', profileData.Address);
     formData.append('NoTlp', profileData.NoTlp);
     formData.append('Photo', profileData.Photo);

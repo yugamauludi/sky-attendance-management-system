@@ -20,3 +20,16 @@ export const formatDateTime = (dateString: string | null | undefined): string =>
 
     return `${weekday}, ${day} ${month} ${year} ${hours}.${minutes}.${seconds}`;
 };
+
+export function formatDateUTC(isoString: string | null | undefined): string | undefined {
+    if (!isoString) return "-";
+
+    const date = new Date(isoString);
+
+    const day = String(date.getUTCDate()).padStart(2, '0');
+    const month = date.toLocaleString('id-ID', { month: 'long', timeZone: 'UTC' });
+    const year = date.getUTCFullYear();
+
+    return `${day} ${month} ${year}`;
+}
+

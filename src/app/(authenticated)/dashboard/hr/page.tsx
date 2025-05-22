@@ -68,7 +68,6 @@ export default function HRDashboardPage() {
     const fetchAttendances = async () => {
       try {
         const response = await getAllAttendance(currentPage, itemsPerPage);
-        console.log(response, "<<<<response");
 
         setPagination(response.meta);
 
