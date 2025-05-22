@@ -55,10 +55,7 @@ const CreateLocationPage: React.FC = () => {
       console.error("Error:", error);
       alert("Terjadi kesalahan saat menambahkan lokasi baru");
     }
-  };
-
-  console.log();
-  
+  };  
 
   return (
     <div className="min-h-screen bg-[#1a1a1a] p-4 flex items-center justify-center">

@@ -41,7 +41,6 @@ export const getAllLocations = async (page = 1, limit = 10): Promise<LocationRes
     }
 
     const responseData: LocationResponse = await response.json();
-    console.log('Response data:', responseData);
 
     if (!responseData.data || !Array.isArray(responseData.data)) {
       throw new Error('Format data tidak valid');
@@ -73,7 +72,6 @@ export const addLocation = async (locationData: any) => {
       credentials: "include",
       body: JSON.stringify(locationData)
     });
-    console.log("RESPONSE: ", response);
 
     if (!response.ok) {
       const errorData = await response.json();

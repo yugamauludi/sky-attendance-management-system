@@ -59,7 +59,6 @@ export const getAllEmployees = async (page = 1, limit = 10): Promise<EmployeeRes
     }
 
     const responseData: EmployeeResponse = await response.json();
-    console.log('Response data:', responseData);
 
     if (!responseData.data || !Array.isArray(responseData.data)) {
       throw new Error('Format data tidak valid');
@@ -115,7 +114,6 @@ export const addEmployee = async (employeeData: any) => {
       credentials: "include",
       body: JSON.stringify(employeeData)
     });
-    console.log("RESPONSE: ", response);
 
     if (!response.ok) {
       const errorData = await response.json();

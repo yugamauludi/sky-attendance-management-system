@@ -14,10 +14,7 @@ const DetailModal: React.FC<EmployeeDetail> = ({
   onClose,
 }) => {
   if (!isOpen || !employee) return null;
-  console.log(employee, "<<employee.pathIn");
-  const baseUrl = process.env.NEXT_PUBLIC_API_URL;
-  console.log(baseUrl, "<<baseUrl");
-  
+  const baseUrl = process.env.NEXT_PUBLIC_API_URL;  
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 pb-24">

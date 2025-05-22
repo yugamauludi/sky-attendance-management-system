@@ -68,8 +68,6 @@ export default function ProfilePage() {
     fetchProfile();
   }, []);
 
-  console.log(profile, "<<<<profile");
-
   const handleLogout = async () => {
     try {
       await logout();
@@ -108,8 +106,6 @@ export default function ProfilePage() {
         toast.error("Silakan pilih foto profil");
         return;
       }
-
-      console.log(selectedImage, "<<<<selectedImage");
 
       const profileData: EditProfileRequest = {
         Name: editedProfile.name,

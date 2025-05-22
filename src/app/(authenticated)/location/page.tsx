@@ -18,7 +18,6 @@ const LocationListPage: React.FC = () => {
     const fetchLocations = async () => {
       try {
         const data = await getAllLocations(currentPage, itemsPerPage);
-        console.log(data, "<<<data");
         
         setLocations(data.data);
         setPagination(data.meta);
@@ -49,9 +48,9 @@ const LocationListPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#1a1a1a]">
+    <div className="min-h-screen bg-[#1a1a1a] overflow-auto">
       <Background />
-      <div className="relative h-screen overflow-auto">
+      <div className="relative min-h-screen">
         <div className="mx-4 lg:mx-8">
           <h1 className="text-2xl font-bold text-yellow-400 mb-4">
             Daftar Lokasi
