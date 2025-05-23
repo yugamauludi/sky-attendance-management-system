@@ -41,18 +41,18 @@ export default function DashboardPage() {
 
         setAttendance({
           status:
-            attendanceDetail.data.Status === "Hadir"
+            attendanceDetail?.data?.Status === "Hadir"
               ? "present"
-              : attendanceDetail.data.Status === "Tidak Hadir"
+              : attendanceDetail?.data?.Status === "Tidak Hadir"
               ? "absent"
               : "not_yet",
-          checkIn: formatDateTime(attendanceDetail.data.InTime),
-          checkOut: formatDateTime(attendanceDetail.data.OutTime),
-          duration: attendanceDetail.data.Duration
-            ? `${attendanceDetail.data.Duration} jam`
+          checkIn: formatDateTime(attendanceDetail?.data?.InTime),
+          checkOut: formatDateTime(attendanceDetail?.data?.OutTime),
+          duration: attendanceDetail?.data?.Duration
+            ? `${attendanceDetail?.data?.Duration} jam`
             : undefined,
           location: {
-            address: `${attendanceDetail.data.LocationName}, ${attendanceDetail.data.Address}`,
+            address: `${attendanceDetail?.data?.LocationName}, ${attendanceDetail?.data?.Address}`,
           },
         });
       } catch (error) {
@@ -239,23 +239,6 @@ export default function DashboardPage() {
       });
 
       if (response.code === 210002) {
-        // Update state setelah check-in berhasil
-        setAttendance((prev) => ({
-          ...prev,
-          status: "present",
-          checkIn: new Date()
-            .toLocaleTimeString("id-ID", {
-              hour: "2-digit",
-              minute: "2-digit",
-              second: "2-digit",
-              hour12: false,
-            })
-            .replace(/\./g, ":"),
-          location: {
-            address: "Akan diisi dari hasil geocoding",
-          },
-        }));
-
         // Set pesan modal setelah check-in berhasil
         setModalMessage("Selamat bekerja! Anda telah berhasil check-in.");
         setIsModalOpen(true);

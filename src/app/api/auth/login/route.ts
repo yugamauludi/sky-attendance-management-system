@@ -25,8 +25,17 @@ export async function POST(request: Request) {
     });
 
     const data = await response.json();
-    const rawSetCookie = response.headers.get("set-cookie");
 
+    // Jika response tidak ok, kembalikan error dari API
+    if (!response.ok) {
+      return NextResponse.json(
+        { message: data.message || "Terjadi kesalahan saat login" },
+        { status: response.status }
+      );
+    }
+
+    // Jika sukses, baru mapping data
+    const rawSetCookie = response.headers.get("set-cookie");
     const res = NextResponse.json({ 
       role: data?.user?.role === 1 ? 'hr' : 'employee',
       id: data?.user?.id,

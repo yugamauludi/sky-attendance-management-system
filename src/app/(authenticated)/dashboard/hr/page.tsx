@@ -8,7 +8,7 @@ import Background from "@/components/Background";
 import Link from "next/link";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import { getAllAttendance } from "@/services/attendance";
+import { exportAttendance, getAllAttendance } from "@/services/attendance";
 import { formatDateTime } from "@/utiils/dateFormatter";
 
 export interface EmployeeAttendance {
@@ -90,7 +90,7 @@ export default function HRDashboardPage() {
     };
 
     fetchAttendances();
-  }, [currentPage, itemsPerPage]); // Tambahkan itemsPerPage sebagai dependency
+  }, [currentPage, itemsPerPage]);
 
   const [filteredAttendances, setFilteredAttendances] = useState<
     EmployeeAttendance[]
@@ -190,6 +190,30 @@ export default function HRDashboardPage() {
     employee: null,
   });
 
+  const [showExportModal, setShowExportModal] = useState(false);
+  const [exportDates, setExportDates] = useState({
+    startDate: null as Date | null,
+    endDate: null as Date | null,
+  });
+
+  const handleExport = async () => {
+    try {
+      if (!exportDates.startDate || !exportDates.endDate) {
+        alert("Silakan pilih tanggal mulai dan tanggal akhir terlebih dahulu");
+        return;
+      }
+
+      const startDate = exportDates.startDate.toISOString().split("T")[0];
+      const endDate = exportDates.endDate.toISOString().split("T")[0];
+
+      await exportAttendance(startDate, endDate);
+      setShowExportModal(false);
+    } catch (error) {
+      console.error("Error exporting data:", error);
+      alert("Gagal mengekspor data");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#1a1a1a] overflow-auto">
       {" "}
@@ -219,6 +243,12 @@ export default function HRDashboardPage() {
                 Quick Actions
               </h3>
               <div className="flex space-x-4">
+                <button
+                  onClick={() => setShowExportModal(true)}
+                  className="text-white bg-gradient-to-br from-yellow-500 to-yellow-600 hover:bg-gradient-to-bl focus:ring-4 focus:outline-none focus:ring-yellow-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center"
+                >
+                  Export Data
+                </button>
                 {/* <Link
                   href="/dashboard/hr/leave-approval"
                   className="flex flex-col items-center justify-center rounded-lg bg-black/30 p-4 transition-all hover:bg-black/50 hover:ring-1 hover:ring-yellow-500/40 relative group"
@@ -497,6 +527,96 @@ export default function HRDashboardPage() {
           </div>
         </div>
       </div>
+      {showExportModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-[#1a1a1a] rounded-2xl p-4 sm:p-6 max-w-md w-full mx-4 space-y-4 ring-1 ring-yellow-500/20">
+            <div className="flex items-start justify-between">
+              <div>
+                <h3 className="text-lg font-semibold text-yellow-400">
+                  Export Data Kehadiran
+                </h3>
+                <p className="text-sm text-zinc-400">
+                  Pilih rentang tanggal untuk mengekspor data
+                </p>
+              </div>
+              <button
+                onClick={() => setShowExportModal(false)}
+                className="text-zinc-400 hover:text-white"
+              >
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm text-zinc-400 mb-1">
+                  Tanggal Mulai
+                </label>
+                <DatePicker
+                  selected={exportDates.startDate}
+                  onChange={(date) =>
+                    setExportDates((prev) => ({ ...prev, startDate: date }))
+                  }
+                  selectsStart
+                  startDate={exportDates.startDate}
+                  endDate={exportDates.endDate}
+                  dateFormat="dd/MM/yyyy"
+                  placeholderText="Pilih tanggal mulai"
+                  className="w-full rounded-lg bg-black/30 px-3 py-2 text-sm text-white placeholder-zinc-500 ring-1 ring-yellow-500/20 focus:outline-none focus:ring-2 focus:ring-yellow-500/40"
+                  wrapperClassName="w-full"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm text-zinc-400 mb-1">
+                  Tanggal Akhir
+                </label>
+                <DatePicker
+                  selected={exportDates.endDate}
+                  onChange={(date) =>
+                    setExportDates((prev) => ({ ...prev, endDate: date }))
+                  }
+                  selectsEnd
+                  startDate={exportDates.startDate}
+                  endDate={exportDates.endDate}
+                  minDate={exportDates.startDate || undefined}
+                  dateFormat="dd/MM/yyyy"
+                  placeholderText="Pilih tanggal akhir"
+                  className="w-full rounded-lg bg-black/30 px-3 py-2 text-sm text-white placeholder-zinc-500 ring-1 ring-yellow-500/20 focus:outline-none focus:ring-2 focus:ring-yellow-500/40"
+                  wrapperClassName="w-full"
+                />
+              </div>
+
+              <div className="flex justify-end space-x-3">
+                <button
+                  onClick={() => setShowExportModal(false)}
+                  className="px-4 py-2 text-sm font-medium text-zinc-400 hover:text-white"
+                >
+                  Batal
+                </button>
+                <button
+                  onClick={handleExport}
+                  className="px-4 py-2 text-sm font-medium text-white bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-lg hover:bg-gradient-to-bl focus:ring-4 focus:ring-yellow-300"
+                >
+                  Export
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
       {/* Detail Modal */}
       {detailModal.isOpen && detailModal.employee && (
         <DetailModal

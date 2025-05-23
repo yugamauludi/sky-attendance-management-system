@@ -203,3 +203,41 @@ export const getAttendanceDetail = async (): Promise<AttendanceDetailResponse> =
     throw error;
   }
 };
+
+export const exportAttendance = async (startDate: string, endDate: string) => {
+  try {
+    const { timestamp, signature } = await getSignature();
+    const token = document.cookie.split('; ').find(row => row.startsWith('token='))?.split('=')[1] || '';
+
+    const response = await fetch(`/api/export/attendance?startDate=${startDate}&endDate=${endDate}`, {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'text/plain',
+        'x-timestamp': timestamp,
+        'x-signature': signature,
+        'Authorization': `Bearer ${token}`
+      },
+      credentials: 'include',
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Gagal mengekspor data');
+    }
+
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `attendance-report-${startDate}-to-${endDate}.xlsx`;
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+  } catch (error) {
+    console.error('Error:', error);
+    throw error;
+  }
+};
+
