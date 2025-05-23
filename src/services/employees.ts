@@ -34,7 +34,6 @@ interface EmployeeResponse {
   };
 }
 
-
 export const getAllEmployees = async (page = 1, limit = 10): Promise<EmployeeResponse> => {
   try {
     const { timestamp, signature } = await getSignature();
