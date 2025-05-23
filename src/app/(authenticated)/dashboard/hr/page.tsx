@@ -242,16 +242,10 @@ export default function HRDashboardPage() {
               <h3 className="text-sm font-medium text-yellow-400 mb-3">
                 Quick Actions
               </h3>
-              <div className="flex space-x-4">
+              <div className="grid grid-cols-3 content-end gap-4">
                 <button
                   onClick={() => setShowExportModal(true)}
-                  className="text-white bg-gradient-to-br from-yellow-500 to-yellow-600 hover:bg-gradient-to-bl focus:ring-4 focus:outline-none focus:ring-yellow-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center"
-                >
-                  Export Data
-                </button>
-                {/* <Link
-                  href="/dashboard/hr/leave-approval"
-                  className="flex flex-col items-center justify-center rounded-lg bg-black/30 p-4 transition-all hover:bg-black/50 hover:ring-1 hover:ring-yellow-500/40 relative group"
+                  className="w-md flex flex-col items-center justify-center rounded-lg bg-black/30 p-4 transition-all hover:bg-black/50 hover:ring-1 hover:ring-yellow-500/40 group"
                 >
                   <div className="rounded-full bg-yellow-500/10 p-3 mb-2 group-hover:bg-yellow-500/20">
                     <svg
@@ -264,23 +258,17 @@ export default function HRDashboardPage() {
                         strokeLinecap="round"
                         strokeLinejoin="round"
                         strokeWidth={2}
-                        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+                        d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
                       />
                     </svg>
                   </div>
                   <span className="text-sm font-medium text-zinc-300">
-                    Approval Cuti
+                    Export Data
                   </span>
-                  {stats.cuti > 0 && (
-                    <span className="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white">
-                      {stats.cuti}
-                    </span>
-                  )}
-                </Link> */}
-
+                </button>
                 <Link
                   href="/dashboard/hr/add"
-                  className="flex flex-col items-center justify-center rounded-lg bg-black/30 p-4 transition-all hover:bg-black/50 hover:ring-1 hover:ring-yellow-500/40 group"
+                  className="w-md flex flex-col items-center justify-center rounded-lg bg-black/30 p-4 transition-all hover:bg-black/50 hover:ring-1 hover:ring-yellow-500/40 group"
                 >
                   <div className="rounded-full bg-yellow-500/10 p-3 mb-2 group-hover:bg-yellow-500/20">
                     <svg
@@ -301,10 +289,9 @@ export default function HRDashboardPage() {
                     Tambah Karyawan
                   </span>
                 </Link>
-
                 <Link
                   href="/employee-list"
-                  className="flex flex-col items-center justify-center rounded-lg bg-black/30 p-4 transition-all hover:bg-black/50 hover:ring-1 hover:ring-yellow-500/40 group"
+                  className="w-md flex flex-col items-center justify-center rounded-lg bg-black/30 p-4 transition-all hover:bg-black/50 hover:ring-1 hover:ring-yellow-500/40 group"
                 >
                   <div className="rounded-full bg-yellow-500/10 p-3 mb-2 group-hover:bg-yellow-500/20">
                     <svg
