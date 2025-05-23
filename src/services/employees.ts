@@ -74,14 +74,17 @@ export const deleteEmployee = async (id: string): Promise<void> => {
   try {
     // Dapatkan signature terlebih dahulu
     const { timestamp, signature } = await getSignature();
+    const token = document.cookie.split('; ').find(row => row.startsWith('token='))?.split('=')[1] || '';
 
     const response = await fetch(`/api/users/delete/${id}`, {
       method: 'DELETE',
       headers: {
         'Accept': 'application/json',
         'x-timestamp': timestamp,
-        'x-signature': signature
+        'x-signature': signature,
+        'Authorization': `Bearer ${token}`
       },
+      credentials: "include",
     });
 
     if (!response.ok) {
