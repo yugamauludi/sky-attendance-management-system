@@ -325,7 +325,7 @@ export default function HRDashboardPage() {
                   <p className="text-2xl font-semibold text-white">
                     {stats.totalKaryawan}
                   </p>
-                  <div className="text-right">
+                  {/* <div className="text-right">
                     <p className="text-xs text-zinc-400">Inhouse</p>
                     <p className="text-sm font-medium text-yellow-400">
                       {stats.inhouse}
@@ -336,7 +336,7 @@ export default function HRDashboardPage() {
                     <p className="text-sm font-medium text-yellow-400">
                       {stats.vendor}
                     </p>
-                  </div>
+                  </div> */}
                 </div>
               </div>
 

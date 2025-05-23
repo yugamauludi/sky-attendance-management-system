@@ -6,7 +6,7 @@ const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 export const signJWT = (payload: any, options?: jwt.SignOptions) => {
   return jwt.sign(payload, JWT_SECRET, {
     ...(options && options),
-    expiresIn: '1d', // Token berlaku 1 hari
+    expiresIn: '7d', // Token berlaku 1 hari
   });
 };
 
