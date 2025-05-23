@@ -3,9 +3,10 @@ import type { NextRequest } from "next/server";
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
 ) {
   try {
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get('id');
     const timestamp = request.headers.get('x-timestamp');
     const signature = request.headers.get('x-signature');
     const token = request.headers.get('Authorization');
@@ -20,7 +21,7 @@ export async function PUT(
     const formData = await request.formData();
     
     const response = await fetch(
-      `${process.env.API_URL}/v1/api/detail-users/updated/${params.id}`,
+      `${process.env.API_URL}/v1/api/detail-users/updated/${id}`,
       {
         method: "PUT",
         headers: {
