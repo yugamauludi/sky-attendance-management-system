@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-export const DELETE = async (
+export async function DELETE(
   request: NextRequest,
   { params }: { params: { id: string } }
-) => {
+) {
   try {
-    const id = params.id;
+    const { id } = params;
     const timestamp = request.headers.get('x-timestamp');
     const signature = request.headers.get('x-signature');
 
