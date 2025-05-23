@@ -22,7 +22,7 @@ export const getAllLocations = async (page = 1, limit = 10): Promise<LocationRes
   try {
     const { timestamp, signature } = await getSignature();
 
-    const token = document.cookie.split('; ').find(row => row.startsWith('token='))?.split('=')[1] || '';
+    // const token = document.cookie.split('; ').find(row => row.startsWith('token='))?.split('=')[1] || '';
 
     const response = await fetch(`/api/location/get-all?page=${page}&limit=${limit}`, {
       method: 'GET',
@@ -30,8 +30,9 @@ export const getAllLocations = async (page = 1, limit = 10): Promise<LocationRes
         'Accept': 'application/json',
         'x-timestamp': timestamp,
         'x-signature': signature,
-        'Authorization': `Bearer ${token}`
+        // 'Authorization': `Bearer ${token}`
       },
+      credentials: "include",
     });
 
     if (!response.ok) {

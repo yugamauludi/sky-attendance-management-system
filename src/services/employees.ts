@@ -38,7 +38,7 @@ export const getAllEmployees = async (page = 1, limit = 10): Promise<EmployeeRes
   try {
     const { timestamp, signature } = await getSignature();
 
-    const token = document.cookie.split('; ').find(row => row.startsWith('token='))?.split('=')[1] || '';
+    // const token = document.cookie.split('; ').find(row => row.startsWith('token='))?.split('=')[1] || '';
 
     const response = await fetch(`/api/detail-users/get-all?page=${page}&limit=${limit}`, {
       method: 'GET',
@@ -46,8 +46,9 @@ export const getAllEmployees = async (page = 1, limit = 10): Promise<EmployeeRes
         'Accept': 'application/json',
         'x-timestamp': timestamp,
         'x-signature': signature,
-        'Authorization': `Bearer ${token}`
+        // 'Authorization': `Bearer ${token}`
       },
+      credentials: 'include',
     });
 
     if (!response.ok) {

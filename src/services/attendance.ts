@@ -46,7 +46,7 @@ export interface AttendanceResponse {
 export const getAllAttendance = async (page = 1, limit = 10) => {
   try {
     const { timestamp, signature } = await getSignature();
-    const token = document.cookie.split('; ').find(row => row.startsWith('token='))?.split('=')[1] || '';
+    // const token = document.cookie.split('; ').find(row => row.startsWith('token='))?.split('=')[1] || '';
 
     const response = await fetch(`/api/attendance/get-all?page=${page}&limit=${limit}`, {
       method: 'GET',
@@ -55,7 +55,7 @@ export const getAllAttendance = async (page = 1, limit = 10) => {
         'Content-Type': 'application/json',
         'x-timestamp': timestamp,
         'x-signature': signature,
-        'Authorization': `Bearer ${token}`
+        // 'Authorization': `Bearer ${token}`
       },
       credentials: 'include',
     });
