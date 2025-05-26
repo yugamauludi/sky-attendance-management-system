@@ -119,6 +119,15 @@ export const checkInAttendance = async (data: {
   }
 };
 
+export const loginDummy = async () => {
+  // Simulasi delay dan response sukses
+  return new Promise<{ code: number; message: string }>((resolve) => {
+    setTimeout(() => {
+      resolve({ code: 200, message: "Login sukses" });
+    }, 1000);
+  });
+};
+
 export const checkOutAttendance = async ({
   latitude,
   longitude,

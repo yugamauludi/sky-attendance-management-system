@@ -33,34 +33,10 @@ export default function DashboardPage() {
   const [modalMessage, setModalMessage] = useState("");
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [isCheckingIn, setIsCheckingIn] = useState(false);
+  const [isDataLoading, setIsDataLoading] = useState(true);
 
   useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        const attendanceDetail = await getAttendanceDetail();
-
-        setAttendance({
-          status:
-            attendanceDetail?.data?.Status === "Hadir"
-              ? "present"
-              : attendanceDetail?.data?.Status === "Tidak Hadir"
-              ? "absent"
-              : "not_yet",
-          checkIn: formatDateTime(attendanceDetail?.data?.InTime),
-          checkOut: formatDateTime(attendanceDetail?.data?.OutTime),
-          duration: attendanceDetail?.data?.Duration
-            ? `${attendanceDetail?.data?.Duration} jam`
-            : undefined,
-          location: {
-            address: `${attendanceDetail?.data?.LocationName}, ${attendanceDetail?.data?.Address}`,
-          },
-        });
-      } catch (error) {
-        console.error("Error fetching profile:", error);
-      }
-    };
-
-    fetchProfile();
+    fetchAttendanceData();
   }, []);
 
   const handleCheckIn = async () => {
@@ -93,7 +69,6 @@ export default function DashboardPage() {
 
   const handleCheckOut = async () => {
     try {
-      
       const currentPosition = await new Promise<GeolocationPosition>(
         (resolve, reject) => {
           navigator.geolocation.getCurrentPosition(resolve, reject);
@@ -120,9 +95,102 @@ export default function DashboardPage() {
     }
   };
 
+  const fetchAttendanceData = async () => {
+    try {
+      setIsDataLoading(true);
+      const attendanceDetail = await getAttendanceDetail();
+      setAttendance({
+        status:
+          attendanceDetail?.data?.Status === "Hadir"
+            ? "present"
+            : attendanceDetail?.data?.Status === "Tidak Hadir"
+            ? "absent"
+            : "not_yet",
+        checkIn: formatDateTime(attendanceDetail?.data?.InTime),
+        checkOut: formatDateTime(attendanceDetail?.data?.OutTime),
+        duration: attendanceDetail?.data?.Duration
+          ? `${attendanceDetail?.data?.Duration} jam`
+          : undefined,
+        location: {
+          address: `${attendanceDetail?.data?.LocationName}, ${attendanceDetail?.data?.Address}`,
+        },
+      });
+    } catch (error) {
+      console.error("Error fetching attendance:", error);
+    } finally {
+      setIsDataLoading(false);
+    }
+  };
+
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleCapturePhoto = async () => {
+    try {
+      if (!position || !videoRef.current) return;
+      setIsLoading(true);
+
+      // Ambil foto
+      const canvas = document.createElement("canvas");
+      canvas.width = videoRef.current.videoWidth;
+      canvas.height = videoRef.current.videoHeight;
+      canvas.getContext("2d")?.drawImage(videoRef.current, 0, 0);
+      const blob = await new Promise<Blob>((resolve) => {
+        canvas.toBlob(
+          (blob) => {
+            if (blob) resolve(blob);
+          },
+          "image/jpeg",
+          0.95
+        );
+      });
+
+      // Buat file dari blob
+      const photoFile = new File([blob], "check-in-photo.jpg", {
+        type: "image/jpeg",
+      });
+
+      // Kirim data check-in ke API
+      const response = await checkInAttendance({
+        latitude: position.coords.latitude.toString(),
+        longitude: position.coords.longitude.toString(),
+        photo: photoFile,
+      });
+
+      if (response.code === 250002) {
+        // Set pesan modal setelah check-in berhasil
+        setModalMessage("Selamat bekerja! Anda telah berhasil check-in.");
+        setIsModalOpen(true);
+        await fetchAttendanceData();
+      }
+      // Matikan kamera
+      if (videoRef.current?.srcObject) {
+        const tracks = (videoRef.current.srcObject as MediaStream).getTracks();
+        tracks.forEach((track) => track.stop());
+      }
+      setShowCamera(false);
+    } catch (error: any) {
+      // Tambahkan type any untuk mengakses message
+      console.error("Error during photo capture:", error);
+      if (error.message === "Kamu sudah lakukan absen masuk") {
+        setModalMessage("Kamu sudah melakukan absen masuk");
+      } else {
+        setModalMessage("Gagal melakukan check-in. Silakan coba lagi.");
+      }
+      setIsModalOpen(true);
+      setShowCamera(false);
+      if (videoRef.current?.srcObject) {
+        const tracks = (videoRef.current.srcObject as MediaStream).getTracks();
+        tracks.forEach((track) => track.stop());
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleCaptureCheckOutPhoto = async () => {
     try {
       if (!position || !videoRef.current) return;
+      setIsLoading(true);
 
       const canvas = document.createElement("canvas");
       canvas.width = videoRef.current.videoWidth;
@@ -167,7 +235,7 @@ export default function DashboardPage() {
         photo: photoFile,
       });
 
-      if (response.code === 210002) {
+      if (response.code === 250003) {
         // Update state setelah check-out berhasil
         setAttendance((prev) => ({
           ...prev,
@@ -191,6 +259,7 @@ export default function DashboardPage() {
         );
         setIsModalOpen(true);
         toast.success("Berhasil melakukan check-out");
+        await fetchAttendanceData();
       }
 
       // Matikan kamera
@@ -204,64 +273,8 @@ export default function DashboardPage() {
       toast.error("Gagal melakukan check-out");
       setModalMessage("Gagal melakukan check-out. Silakan coba lagi.");
       setIsModalOpen(true);
-    }
-  };
-
-  const handleCapturePhoto = async () => {
-    try {
-      if (!position || !videoRef.current) return;
-
-      // Ambil foto
-      const canvas = document.createElement("canvas");
-      canvas.width = videoRef.current.videoWidth;
-      canvas.height = videoRef.current.videoHeight;
-      canvas.getContext("2d")?.drawImage(videoRef.current, 0, 0);
-      const blob = await new Promise<Blob>((resolve) => {
-        canvas.toBlob(
-          (blob) => {
-            if (blob) resolve(blob);
-          },
-          "image/jpeg",
-          0.95
-        );
-      });
-
-      // Buat file dari blob
-      const photoFile = new File([blob], "check-in-photo.jpg", {
-        type: "image/jpeg",
-      });
-
-      // Kirim data check-in ke API
-      const response = await checkInAttendance({
-        latitude: position.coords.latitude.toString(),
-        longitude: position.coords.longitude.toString(),
-        photo: photoFile,
-      });
-
-      if (response.code === 210002) {
-        // Set pesan modal setelah check-in berhasil
-        setModalMessage("Selamat bekerja! Anda telah berhasil check-in.");
-        setIsModalOpen(true);
-      }
-      // Matikan kamera
-      if (videoRef.current?.srcObject) {
-        const tracks = (videoRef.current.srcObject as MediaStream).getTracks();
-        tracks.forEach((track) => track.stop());
-      }
-      setShowCamera(false);
-    } catch (error: any) { // Tambahkan type any untuk mengakses message
-      console.error("Error during photo capture:", error);
-      if (error.message === "Kamu sudah lakukan absen masuk") {
-        setModalMessage("Kamu sudah melakukan absen masuk");
-      } else {
-        setModalMessage("Gagal melakukan check-in. Silakan coba lagi.");
-      }
-      setIsModalOpen(true);
-      setShowCamera(false);
-      if (videoRef.current?.srcObject) {
-        const tracks = (videoRef.current.srcObject as MediaStream).getTracks();
-        tracks.forEach((track) => track.stop());
-      }
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -328,60 +341,76 @@ export default function DashboardPage() {
 
             <div className="mt-6 grid gap-6 md:grid-cols-2">
               <div className="rounded-xl bg-gradient-to-b from-black/60 to-black/40 p-5 ring-1 ring-yellow-500/20">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-zinc-400">Status</span>
-                  <span
-                    className={`rounded-full px-3 py-1 text-xs font-medium ${
-                      attendance.status === "present"
-                        ? "bg-yellow-400/10 text-yellow-400 ring-1 ring-yellow-400/20"
-                        : attendance.status === "absent"
-                        ? "bg-red-400/10 text-red-400 ring-1 ring-red-400/20"
-                        : "bg-blue-400/10 text-blue-400 ring-1 ring-blue-400/20"
-                    }`}
-                  >
-                    {attendance.status === "present"
-                      ? "Sudah Absen"
-                      : attendance.status === "absent"
-                      ? "Tidak Hadir"
-                      : "Belum Absen"}
-                  </span>
-                </div>
-                <div className="mt-6 space-y-4">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-zinc-400">Waktu Masuk</span>
-                    <span className="text-sm font-medium text-yellow-400">
-                      {attendance.checkIn || "-"}
-                    </span>
+                {isDataLoading ? (
+                  <div className="flex flex-col items-center justify-center py-8">
+                    <div className="w-10 h-10 border-4 border-yellow-400 border-t-transparent rounded-full animate-spin"></div>
+                    <p className="mt-4 text-yellow-400 text-sm">Memuat data...</p>
                   </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-zinc-400">Waktu Keluar</span>
-                    <span className="text-sm font-medium text-yellow-400">
-                      {attendance.checkOut || "-"}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-zinc-400">Durasi Kerja</span>
-                    <span className="text-sm font-medium text-yellow-400">
-                      {attendance.duration || "-"}
-                    </span>
-                  </div>
-                </div>
+                ) : (
+                  <>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-zinc-400">Status</span>
+                      <span
+                        className={`rounded-full px-3 py-1 text-xs font-medium ${
+                          attendance.status === "present"
+                            ? "bg-yellow-400/10 text-yellow-400 ring-1 ring-yellow-400/20"
+                            : attendance.status === "absent"
+                            ? "bg-red-400/10 text-red-400 ring-1 ring-red-400/20"
+                            : "bg-blue-400/10 text-blue-400 ring-1 ring-blue-400/20"
+                        }`}
+                      >
+                        {attendance.status === "present"
+                          ? "Sudah Absen"
+                          : attendance.status === "absent"
+                          ? "Tidak Hadir"
+                          : "Belum Absen"}
+                      </span>
+                    </div>
+                    <div className="mt-6 space-y-4">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-zinc-400">Waktu Masuk</span>
+                        <span className="text-sm font-medium text-yellow-400">
+                          {attendance.checkIn || "-"}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-zinc-400">Waktu Keluar</span>
+                        <span className="text-sm font-medium text-yellow-400">
+                          {attendance.checkOut || "-"}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-zinc-400">Durasi Kerja</span>
+                        <span className="text-sm font-medium text-yellow-400">
+                          {attendance.duration || "-"}
+                        </span>
+                      </div>
+                    </div>
+                  </>
+                )}
               </div>
 
               <div className="rounded-xl bg-gradient-to-b from-black/60 to-black/40 p-5 ring-1 ring-yellow-500/20">
                 <h3 className="text-sm font-medium text-yellow-400">
                   Lokasi Absen
                 </h3>
-                {attendance.location ? (
-                  <>
-                    <p className="mt-3 text-xs text-zinc-400">
-                      {attendance.location.address}
-                    </p>
-                  </>
+                {isDataLoading ? (
+                  <div className="flex flex-col items-center justify-center py-8">
+                    <div className="w-10 h-10 border-4 border-yellow-400 border-t-transparent rounded-full animate-spin"></div>
+                    <p className="mt-4 text-yellow-400 text-sm">Memuat data...</p>
+                  </div>
                 ) : (
-                  <p className="mt-2 text-sm text-zinc-400">
-                    Belum ada data lokasi
-                  </p>
+                  attendance.location ? (
+                    <>
+                      <p className="mt-3 text-xs text-zinc-400">
+                        {attendance.location.address}
+                      </p>
+                    </>
+                  ) : (
+                    <p className="mt-2 text-sm text-zinc-400">
+                      Belum ada data lokasi
+                    </p>
+                  )
                 )}
               </div>
             </div>
@@ -424,31 +453,35 @@ export default function DashboardPage() {
                 style={{ transform: "scaleX(-1)" }}
                 className="absolute inset-0 h-full w-full object-cover"
               />
+              {isLoading && (
+                <div className="absolute inset-0 flex items-center justify-center bg-black/50">
+                  <div className="flex flex-col items-center">
+                    <div className="w-12 h-12 border-4 border-yellow-400 border-t-transparent rounded-full animate-spin"></div>
+                    <p className="mt-4 text-yellow-400 text-sm">Sedang memproses...</p>
+                  </div>
+                </div>
+              )}
             </div>
             <div className="mt-4 flex justify-end space-x-4">
               <button
                 onClick={() => {
                   if (videoRef.current?.srcObject) {
-                    const tracks = (
-                      videoRef.current.srcObject as MediaStream
-                    ).getTracks();
+                    const tracks = (videoRef.current.srcObject as MediaStream).getTracks();
                     tracks.forEach((track) => track.stop());
                   }
                   setShowCamera(false);
                 }}
-                className="px-4 py-2 text-sm font-medium text-yellow-400 hover:bg-yellow-500/10 rounded-lg transition-colors cursor-pointer"
+                className="px-4 py-2 text-sm font-medium text-yellow-400 hover:bg-yellow-500/10 rounded-lg transition-colors cursor-pointer disabled:opacity-50"
+                disabled={isLoading}
               >
                 Batal
               </button>
               <button
-                onClick={
-                  isCheckingIn ? handleCapturePhoto : handleCaptureCheckOutPhoto
-                }
-                className="px-4 py-2 text-sm font-medium bg-yellow-500 text-black hover:bg-yellow-600 rounded-lg transition-colors cursor-pointer"
+                onClick={isCheckingIn ? handleCapturePhoto : handleCaptureCheckOutPhoto}
+                className="px-4 py-2 text-sm font-medium bg-yellow-500 text-black hover:bg-yellow-600 rounded-lg transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={isLoading}
               >
-                {!isCheckingIn
-                  ? "Ambil Foto & Check Out"
-                  : "Ambil Foto & Check In"}
+                {isLoading ? "Memproses..." : !isCheckingIn ? "Ambil Foto & Check Out" : "Ambil Foto & Check In"}
               </button>
             </div>
           </div>

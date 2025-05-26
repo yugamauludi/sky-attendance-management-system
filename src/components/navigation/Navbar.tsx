@@ -24,7 +24,7 @@ export default function Navbar() {
   return (
     <>
       {/* Navbar Desktop Only */}
-      <nav className="hidden sm:block bg-black/40 backdrop-blur-lg shadow-md border-b border-yellow-500/20">
+      <nav className="hidden sm:block bg-black/40 backdrop-blur-lg shadow-md border-b border-yellow-500/20 fixed top-0 left-0 w-full">
         <div className="mx-4 lg:mx-8">
           <div className="flex h-16 justify-between">
             <div className="flex items-center space-x-8">

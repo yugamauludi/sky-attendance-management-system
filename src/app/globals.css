@@ -39,3 +39,28 @@ body {
     transition: background-color 9999s ease-in-out 0s;
   }
 }
+
+/* Custom scrollbar styling */
+.scrollbar-custom {
+  scrollbar-width: thin;
+  scrollbar-color: #facc15 #000000;
+  /* thumb, track (kuning, hitam) */
+}
+
+/* Chrome, Edge, Safari */
+.scrollbar-custom::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.scrollbar-custom::-webkit-scrollbar-track {
+  background: #000000;
+  /* Track hitam */
+}
+
+.scrollbar-custom::-webkit-scrollbar-thumb {
+  background-color: #facc15;
+  /* Thumb kuning */
+  border-radius: 6px;
+  border: 2px solid #000000;
+}

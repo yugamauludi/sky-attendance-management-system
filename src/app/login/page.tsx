@@ -30,7 +30,7 @@ export default function LoginPage() {
     try {
       const data = await login(credentials);
 
-      document.cookie = `token=${data.token}; path=/`;
+      // document.cookie = `token=${data.token}; path=/`;
       document.cookie = `userRole=${data.role}; path=/`;
       localStorage.setItem("username", data.username);
       localStorage.setItem("id", data.id);

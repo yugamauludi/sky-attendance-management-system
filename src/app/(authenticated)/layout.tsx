@@ -10,7 +10,7 @@ export default function AuthenticatedLayout({
       <div className="relative z-50">
         <Navbar />
       </div>
-      <main className="p-2">{children}</main>
+      <main className="p-2 pt-18">{children}</main>
     </div>
   );
 }

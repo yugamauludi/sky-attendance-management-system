@@ -22,32 +22,34 @@ const DetailModal: React.FC<EmployeeDetail> = ({
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 pb-24">
-      <div className="bg-[#1a1a1a] rounded-2xl p-4 sm:p-6 max-w-full sm:max-w-2xl w-full mx-2 sm:mx-4 space-y-4 ring-1 ring-yellow-500/20 overflow-y-auto max-h-full">
-        <div className="flex items-start justify-between">
-          <div>
-            <h3 className="text-lg sm:text-xl font-semibold text-yellow-400">
-              Detail Kehadiran Karyawan
-            </h3>
-            <p className="text-xs sm:text-sm text-zinc-400">Data lengkap absensi</p>
+      <div className="bg-[#1a1a1a] rounded-2xl max-w-full sm:max-w-2xl w-full mx-2 sm:mx-4 ring-1 ring-yellow-500/20 flex flex-col max-h-[90vh]">
+        <div id="head" className="p-4 sm:p-6 border-b border-yellow-500/20">
+          <div className="flex items-start justify-between">
+            <div>
+              <h3 className="text-lg sm:text-xl font-semibold text-yellow-400">
+                Detail Kehadiran Karyawan
+              </h3>
+              <p className="text-xs sm:text-sm text-zinc-400">Data lengkap absensi</p>
+            </div>
+            <button onClick={onClose} className="text-zinc-400 hover:text-white cursor-pointer">
+              <svg
+                className="w-4 h-4 sm:w-5 sm:h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
           </div>
-          <button onClick={onClose} className="text-zinc-400 hover:text-white cursor-pointer">
-            <svg
-              className="w-4 h-4 sm:w-5 sm:h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
-          </button>
         </div>
-        <div className="gap-4">
-
+        
+        <div id="body" className="p-4 sm:p-6 space-y-4 overflow-y-auto scrollbar-custom">
           {/* Foto Check-in & Check-out */}
           <div className="grid grid-cols-2 gap-4">
             <div className="aspect-video rounded-xl bg-black/40 flex flex-col items-center justify-center">

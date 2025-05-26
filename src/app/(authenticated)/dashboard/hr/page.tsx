@@ -24,6 +24,8 @@ export interface EmployeeAttendance {
   pathIn: string;
   pathOut: string;
   notes?: string;
+  // dateIn: string;
+  // dateOut: string;
 }
 
 interface EmployeeDetail {
@@ -36,20 +38,23 @@ const mapApiEmployeeToEmployee = (apiAttendance: any): EmployeeAttendance => {
     id: apiAttendance.Id,
     userId: apiAttendance.UserId,
     name: apiAttendance.Fullname,
-    location: apiAttendance.LocationName + " - " + apiAttendance.Address,
+    location: apiAttendance.LocationName,
     date: apiAttendance.Date,
-    checkIn: apiAttendance.InTime,
-    checkOut: apiAttendance.OutTime,
+    checkIn: formatDateTime(apiAttendance.InTime),
+    checkOut: formatDateTime(apiAttendance.OutTime),
     duration: apiAttendance.Duration,
     status: apiAttendance.Status,
     pathIn: apiAttendance.pathIn,
     pathOut: apiAttendance.pathOut,
     notes: apiAttendance.Description,
+    // dateIn: formatTanggalPendekWIB(apiAttendance.InTime),
+    // dateOut: formatTanggalPendekWIB(apiAttendance.OutTime),
   };
 };
 
 export default function HRDashboardPage() {
   const [attendances, setAttendances] = useState<EmployeeAttendance[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [stats, setStats] = useState({
     totalKaryawan: 0,
     inhouse: 0,
@@ -61,11 +66,12 @@ export default function HRDashboardPage() {
 
   const [currentPage, setCurrentPage] = useState(1);
   const [pagination, setPagination] = useState({});
-  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [itemsPerPage, setItemsPerPage] = useState(5);
 
   useEffect(() => {
     const fetchAttendances = async () => {
       try {
+        setIsLoading(true);
         const response = await getAllAttendance(currentPage, itemsPerPage);
 
         setPagination(response.meta);
@@ -86,6 +92,8 @@ export default function HRDashboardPage() {
         });
       } catch (error) {
         console.error("Error fetching employees:", error);
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -133,14 +141,21 @@ export default function HRDashboardPage() {
   }, [attendances, filters]);
 
   const columns = [
-    { key: "name", label: "Nama Karyawan" },
     { key: "date", label: "Tanggal", hiddenOnMobile: true },
-    { key: "location", label: "Lokasi", hiddenOnMobile: true },
+    // {key: "dateIn", label: "Tanggal Check In", hiddenOnMobile: true},
+    // {key: "dateOut", label: "Tanggal Check Out", hiddenOnMobile: true},
+    { key: "name", label: "Nama Karyawan" },
+    {
+      key: "location",
+      label: "Lokasi",
+      hiddenOnMobile: true,
+      minWidth: "200px",
+    },
     { key: "checkIn", label: "Check In" },
     { key: "checkOut", label: "Check Out" },
     { key: "duration", label: "Durasi", hiddenOnMobile: true },
     { key: "status", label: "Status" },
-    { key: "notes", label: "Keterangan", hiddenOnMobile: true },
+    // { key: "notes", label: "Keterangan", hiddenOnMobile: true },
   ];
   const renderAttendanceCell = (
     attendance: EmployeeAttendance,
@@ -164,9 +179,9 @@ export default function HRDashboardPage() {
           day: "numeric",
         });
       case "checkIn":
-        return formatDateTime(attendance.checkIn);
+        return attendance.checkIn;
       case "checkOut":
-        return formatDateTime(attendance.checkOut);
+        return attendance.checkOut;
       case "status":
         return (
           <span
@@ -222,11 +237,11 @@ export default function HRDashboardPage() {
       {/* Content Container - hapus overflow-auto */}
       <div className="relative min-h-screen">
         <div className="mx-4 lg:mx-8 pb-8">
-          {" "}
           {/* Tambahkan padding bottom */}
           {/* Header Card */}
+
           <div id="dashboard-head" className="py-2">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <h1 className="bg-gradient-to-r from-yellow-400 to-yellow-600 bg-clip-text text-2xl font-bold text-transparent">
                   Dashboard HR
@@ -235,83 +250,79 @@ export default function HRDashboardPage() {
                   Monitoring Kehadiran Karyawan
                 </p>
               </div>
-            </div>
-
-            {/* Quick Actions Card */}
-            <div className="mt-4 rounded-xl bg-black/30 p-4 ring-1 ring-yellow-500/10">
-              <h3 className="text-sm font-medium text-yellow-400 mb-3">
-                Quick Actions
-              </h3>
-              <div className="grid grid-cols-3 content-end gap-4">
-                <button
-                  onClick={() => setShowExportModal(true)}
-                  className="w-md flex flex-col items-center justify-center rounded-lg bg-black/30 p-4 transition-all hover:bg-black/50 hover:ring-1 hover:ring-yellow-500/40 group"
-                >
-                  <div className="rounded-full bg-yellow-500/10 p-3 mb-2 group-hover:bg-yellow-500/20">
-                    <svg
-                      className="h-6 w-6 text-yellow-400"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                      />
-                    </svg>
-                  </div>
-                  <span className="text-sm font-medium text-zinc-300">
-                    Export Data
-                  </span>
-                </button>
-                <Link
-                  href="/dashboard/hr/add"
-                  className="w-md flex flex-col items-center justify-center rounded-lg bg-black/30 p-4 transition-all hover:bg-black/50 hover:ring-1 hover:ring-yellow-500/40 group"
-                >
-                  <div className="rounded-full bg-yellow-500/10 p-3 mb-2 group-hover:bg-yellow-500/20">
-                    <svg
-                      className="h-6 w-6 text-yellow-400"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M12 4v16m8-8H4"
-                      />
-                    </svg>
-                  </div>
-                  <span className="text-sm font-medium text-zinc-300">
-                    Tambah Karyawan
-                  </span>
-                </Link>
-                <Link
-                  href="/employee-list"
-                  className="w-md flex flex-col items-center justify-center rounded-lg bg-black/30 p-4 transition-all hover:bg-black/50 hover:ring-1 hover:ring-yellow-500/40 group"
-                >
-                  <div className="rounded-full bg-yellow-500/10 p-3 mb-2 group-hover:bg-yellow-500/20">
-                    <svg
-                      className="h-6 w-6 text-yellow-400"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
-                      />
-                    </svg>
-                  </div>
-                  <span className="text-sm font-medium text-zinc-300">
-                    Daftar Karyawan
-                  </span>
-                </Link>
+              {/* Quick Actions */}
+              <div className="mt-3 sm:mt-0 w-full sm:w-auto">
+                <div className="grid grid-cols-3 gap-2 w-full sm:w-[500px] min-h-[70px]">
+                  <button
+                    onClick={() => setShowExportModal(true)}
+                    className="flex flex-col items-center justify-center rounded-md bg-black/30 p-2 transition-all hover:bg-black/50 hover:ring-1 hover:ring-yellow-500/40 group w-full h-full"
+                  >
+                    <div className="rounded-full bg-yellow-500/10 p-1 mb-1 group-hover:bg-yellow-500/20">
+                      <svg
+                        className="h-4 w-4 text-yellow-400"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                        />
+                      </svg>
+                    </div>
+                    <span className="text-xs font-medium text-zinc-300">
+                      Export Data
+                    </span>
+                  </button>
+                  <Link
+                    href="/dashboard/hr/add"
+                    className="flex flex-col items-center justify-center rounded-md bg-black/30 p-2 transition-all hover:bg-black/50 hover:ring-1 hover:ring-yellow-500/40 group w-full h-full"
+                  >
+                    <div className="rounded-full bg-yellow-500/10 p-1 mb-1 group-hover:bg-yellow-500/20">
+                      <svg
+                        className="h-4 w-4 text-yellow-400"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M12 4v16m8-8H4"
+                        />
+                      </svg>
+                    </div>
+                    <span className="text-xs font-medium text-zinc-300">
+                      Tambah Karyawan
+                    </span>
+                  </Link>
+                  <Link
+                    href="/employee-list"
+                    className="flex flex-col items-center justify-center rounded-md bg-black/30 p-2 transition-all hover:bg-black/50 hover:ring-1 hover:ring-yellow-500/40 group w-full h-full"
+                  >
+                    <div className="rounded-full bg-yellow-500/10 p-1 mb-1 group-hover:bg-yellow-500/20">
+                      <svg
+                        className="h-4 w-4 text-yellow-400"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+                        />
+                      </svg>
+                    </div>
+                    <span className="text-xs font-medium text-zinc-300">
+                      Daftar Karyawan
+                    </span>
+                  </Link>
+                </div>
               </div>
             </div>
 
@@ -490,27 +501,34 @@ export default function HRDashboardPage() {
                   onChange={(e) => setItemsPerPage(Number(e.target.value))}
                   className="rounded-lg bg-black/30 px-3 py-2 text-sm text-white ring-1 ring-yellow-500/20 focus:outline-none focus:ring-2 focus:ring-yellow-500/40"
                 >
+                  <option value={5}>5</option>
                   <option value={10}>10</option>
-                  <option value={20}>20</option>
                   <option value={50}>50</option>
                   <option value={100}>100</option>
                 </select>
                 <span className="text-sm text-zinc-400">data per halaman</span>
               </div>
             </div>
-            <DataTable
-              columns={columns}
-              data={filteredAttendances}
-              onRowClick={(attendance) =>
-                setDetailModal({ isOpen: true, employee: attendance })
-              }
-              renderCell={renderAttendanceCell}
-              currentPage={currentPage}
-              totalPages={(pagination as any).totalPages}
-              onPageChange={setCurrentPage}
-              itemsPerPage={itemsPerPage}
-              totalItems={(pagination as any).totalItems}
-            />
+            {isLoading ? (
+              <div className="flex flex-col items-center justify-center py-8">
+                <div className="w-10 h-10 border-4 border-yellow-400 border-t-transparent rounded-full animate-spin"></div>
+                <p className="mt-4 text-yellow-400 text-sm">Memuat data...</p>
+              </div>
+            ) : (
+              <DataTable
+                columns={columns}
+                data={filteredAttendances}
+                onRowClick={(attendance) =>
+                  setDetailModal({ isOpen: true, employee: attendance })
+                }
+                renderCell={renderAttendanceCell}
+                currentPage={currentPage}
+                totalPages={(pagination as any).totalPages}
+                onPageChange={setCurrentPage}
+                itemsPerPage={itemsPerPage}
+                totalItems={(pagination as any).totalItems}
+              />
+            )}
           </div>
         </div>
       </div>

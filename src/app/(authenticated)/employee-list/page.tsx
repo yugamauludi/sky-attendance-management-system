@@ -114,7 +114,10 @@ export default function EmployeeListPage() {
     return (
       <div className="min-h-screen bg-[#1a1a1a] flex items-center justify-center">
         <Background />
-        <div className="text-yellow-400">Memuat data...</div>
+        <div className="flex flex-col items-center justify-center py-8">
+          <div className="w-10 h-10 border-4 border-yellow-400 border-t-transparent rounded-full animate-spin"></div>
+          <p className="mt-4 text-yellow-400 text-sm">Memuat data...</p>
+        </div>
       </div>
     );
   }

@@ -6,6 +6,7 @@ interface ColumnConfig {
   className?: string;
   hiddenOnMobile?: boolean;
   render?: (row: Employee) => React.ReactNode;
+  minWidth?: string;
 }
 
 interface DataTableProps<T> {
@@ -76,16 +77,25 @@ export function DataTable<T>({
 
   return (
     <div>
-      <div className="overflow-x-auto">
-        <table className="w-full">
+      <div className="overflow-y-auto max-h-[500px] scrollbar-custom">
+        {/* Atur tinggi sesuai kebutuhan */}
+        <table className="w-full table-auto">
           <thead>
             <tr className="border-b border-yellow-500/20">
               {columns.map((column) => (
                 <th
                   key={column.key}
-                  className={`px-4 py-3 text-left text-sm font-medium text-yellow-400 ${
-                    column.hiddenOnMobile ? "hidden sm:table-cell" : ""
-                  }`}
+                  className={`px-4 py-3 text-left text-sm font-medium text-yellow-400 sticky top-0 bg-zinc-900 z-10
+              ${
+                column.key !== "location"
+                  ? "whitespace-nowrap min-w-[100px]"
+                  : ""
+              }
+              ${column.hiddenOnMobile ? "hidden sm:table-cell" : ""}
+            `}
+                  style={
+                    column.minWidth ? { minWidth: column.minWidth } : undefined
+                  }
                 >
                   {column.label}
                 </th>
@@ -103,8 +113,15 @@ export function DataTable<T>({
                   <td
                     key={column.key}
                     className={`px-4 py-3 text-sm text-zinc-300 ${
-                      column.hiddenOnMobile ? "hidden sm:table-cell" : ""
-                    }`}
+                      column.key !== "location"
+                        ? "whitespace-nowrap min-w-[100px]"
+                        : ""
+                    } ${column.hiddenOnMobile ? "hidden sm:table-cell" : ""}`}
+                    style={
+                      column.minWidth
+                        ? { minWidth: column.minWidth }
+                        : undefined
+                    }
                   >
                     {renderCell(item, column.key)}
                   </td>
@@ -118,9 +135,12 @@ export function DataTable<T>({
       {/* Pagination Controls */}
       <div className="mt-4 flex items-center justify-between px-4">
         <div className="text-sm text-zinc-400">
-          Menampilkan {(currentPage - 1) * itemsPerPage + 1} -{" "}
-          {Math.min(currentPage * itemsPerPage, totalItems)} dari {totalItems}{" "}
-          data
+          {totalItems === 0 || !totalItems
+            ? "Menampilkan 0 - 0 dari 0 data"
+            : `Menampilkan ${(currentPage - 1) * itemsPerPage + 1} - ${Math.min(
+                currentPage * itemsPerPage,
+                totalItems
+              )} dari ${totalItems} data`}
         </div>
         <div className="flex space-x-2">
           <button
