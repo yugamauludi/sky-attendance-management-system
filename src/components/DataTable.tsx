@@ -48,9 +48,10 @@ export function DataTable<T>({
   itemsPerPage,
   totalItems,
 }: DataTableProps<T>) {
-  const getCurrentPageData = () => {
-    return data; // Langsung return data tanpa slice
+  const getCurrentPageData = () => {    
+    return data;
   };
+  
   // Fungsi untuk menghitung range halaman yang akan ditampilkan
   const getPageRange = () => {
     const maxVisiblePages = 5;
@@ -103,7 +104,8 @@ export function DataTable<T>({
             </tr>
           </thead>
           <tbody>
-            {getCurrentPageData().map((item, index) => (
+          {getCurrentPageData().length > 0 ? (
+            getCurrentPageData().map((item, index) => (
               <tr
                 key={index}
                 onClick={() => onRowClick?.(item)}
@@ -127,7 +129,18 @@ export function DataTable<T>({
                   </td>
                 ))}
               </tr>
-            ))}
+            ))) : (
+              <tr>
+                <td 
+                  colSpan={columns.length} 
+                  className="px-4 py-8 text-center text-sm text-zinc-400"
+                >
+                  Belum ada data yang tersedia
+                </td>
+              </tr>
+            )}
+
+            
           </tbody>
         </table>
       </div>
