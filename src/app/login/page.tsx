@@ -29,8 +29,6 @@ export default function LoginPage() {
 
     try {
       const data = await login(credentials);
-
-      // document.cookie = `token=${data.token}; path=/`;
       document.cookie = `userRole=${data.role}; path=/`;
       localStorage.setItem("username", data.username);
       localStorage.setItem("id", data.id);
@@ -42,11 +40,22 @@ export default function LoginPage() {
         router.replace("/dashboard");
       }
     } catch (error) {
+      let errorMessage = "Terjadi kesalahan saat login";
+
       if (error instanceof Error) {
-        setError(error.message);
-      } else {
-        setError("Terjadi kesalahan saat login");
+        const message = error.message.toLowerCase();
+
+        // Mapping error berdasarkan message dari API
+        if (message.includes("credential")) {
+          errorMessage = "Username atau kata sandi salah";
+        } else if (message.includes("server")) {
+          errorMessage = "Terjadi kesalahan saat menghubungi server";
+        } else {
+          errorMessage = error.message; // Gunakan message asli jika tidak match
+        }
       }
+
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }

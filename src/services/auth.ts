@@ -14,41 +14,37 @@ interface LoginResponse {
 }
 
 export const login = async (credentials: LoginCredentials): Promise<LoginResponse> => {
-  try {
-    const response = await fetch('/api/auth/login', {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      credentials: 'include',
-      body: JSON.stringify(credentials),
-    });
+  const response = await fetch('/api/auth/login', {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    credentials: 'include',
+    body: JSON.stringify(credentials),
+  });
 
-    const data = await response.json();
+  const data = await response.json();
 
-    if (!response.ok) {
-      throw new Error(data.message || "Login gagal");
-    }
-
-    return data;
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  } catch (error) {
-    throw new Error("Terjadi kesalahan saat menghubungi server");
+  if (!response.ok) {
+    throw new Error(data.message || "Login gagal");
   }
+
+  return data;
 };
+
 
 export const logout = async () => {
   try {
     Cookies.remove('token', { path: '/' });
     Cookies.remove('userRole', { path: '/' });
-    
+
     localStorage.removeItem('token');
     localStorage.removeItem('userRole');
 
     sessionStorage.clear();
-    
+
     await new Promise(resolve => setTimeout(resolve, 100));
-    
+
     window.location.href = '/login';
   } catch (error) {
     console.error('Error during logout:', error);
