@@ -423,7 +423,7 @@ export default function HRDashboardPage() {
                 />
               </div>
 
-              <div>
+              <div className="z-50">
                 <label className="block text-sm font-medium text-zinc-400 mb-1">
                   Tanggal Mulai
                 </label>
@@ -442,7 +442,7 @@ export default function HRDashboardPage() {
                 />
               </div>
 
-              <div>
+              <div className="z-50">
                 <label className="block text-sm font-medium text-zinc-400 mb-1">
                   Tanggal Akhir
                 </label>
