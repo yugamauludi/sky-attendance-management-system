@@ -229,6 +229,8 @@ export default function HRDashboardPage() {
     }
   };
 
+  const thisDay = new Date();
+
   return (
     <div className="min-h-screen bg-[#1a1a1a] overflow-auto">
       {" "}
@@ -241,7 +243,7 @@ export default function HRDashboardPage() {
           {/* Header Card */}
 
           <div id="dashboard-head" className="py-2">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between m-4">
               <div>
                 <h1 className="bg-gradient-to-r from-yellow-400 to-yellow-600 bg-clip-text text-2xl font-bold text-transparent">
                   Dashboard HR
@@ -327,86 +329,162 @@ export default function HRDashboardPage() {
             </div>
 
             {/* Statistik Karyawan */}
-            <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
-              <div className="rounded-xl bg-black/30 p-4 ring-1 ring-yellow-500/10 min-w-[240px]">
-                <h3 className="text-sm font-medium text-yellow-400">
-                  Jumlah Karyawan
-                </h3>
-                <div className="mt-2 flex items-baseline justify-between">
-                  <p className="text-2xl font-semibold text-white">
-                    {stats.totalKaryawan}
-                  </p>
-                  {/* <div className="text-right">
-                    <p className="text-xs text-zinc-400">Inhouse</p>
-                    <p className="text-sm font-medium text-yellow-400">
-                      {stats.inhouse}
+            <div className="rounded-xl bg-black/30 p-4 ring-1 ring-yellow-500/10 min-w-[240px]">
+              <h3 className="text-sm font-medium text-yellow-400">
+                Kehadiran Karyawan {thisDay.toLocaleDateString("id-ID", {})}
+              </h3>
+              <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
+                <div className="rounded-xl bg-black/30 p-4 ring-1 ring-yellow-500/10 min-w-[240px]">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-sm font-medium text-yellow-400">
+                      Jumlah Karyawan
+                    </h3>
+                    <div className="rounded-full bg-yellow-500/10 p-1">
+                      <svg
+                        className="h-4 w-4 text-yellow-400"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"
+                        />
+                      </svg>
+                    </div>
+                  </div>
+                  <div className="mt-2 flex items-baseline justify-between">
+                    <p className="text-2xl font-semibold text-white">
+                      {stats.totalKaryawan}
                     </p>
                   </div>
-                  <div className="text-right">
-                    <p className="text-xs text-zinc-400">Vendor (DW)</p>
-                    <p className="text-sm font-medium text-yellow-400">
-                      {stats.vendor}
-                    </p>
-                  </div> */}
                 </div>
-              </div>
 
-              <div className="rounded-xl bg-black/30 p-4 ring-1 ring-yellow-500/10 min-w-[240px]">
-                <h3 className="text-sm font-medium text-emerald-400">Hadir</h3>
-                <div className="mt-2 flex items-baseline">
-                  <p className="text-2xl font-semibold text-white">
-                    {stats.hadir}
-                  </p>
-                  <p className="ml-2 text-sm text-zinc-400">
-                    dari {stats.totalKaryawan} karyawan
-                  </p>
+                <div className="rounded-xl bg-black/30 p-4 ring-1 ring-yellow-500/10 min-w-[240px]">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-sm font-medium text-emerald-400">
+                      Hadir
+                    </h3>
+                    <div className="rounded-full bg-emerald-500/10 p-1">
+                      <svg
+                        className="h-4 w-4 text-emerald-400"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                        />
+                      </svg>
+                    </div>
+                  </div>
+                  <div className="mt-2 flex items-baseline">
+                    <p className="text-2xl font-semibold text-white">
+                      {stats.hadir}
+                    </p>
+                    <p className="ml-2 text-sm text-zinc-400">
+                      dari {stats.totalKaryawan} karyawan
+                    </p>
+                  </div>
+                  <div className="mt-1 h-2 w-full rounded-full bg-black/50">
+                    <div
+                      className="h-2 rounded-full bg-emerald-400/70"
+                      style={{
+                        width: `${(stats.hadir / stats.totalKaryawan) * 100}%`,
+                      }}
+                    ></div>
+                  </div>
                 </div>
-                <div className="mt-1 h-2 w-full rounded-full bg-black/50">
-                  <div
-                    className="h-2 rounded-full bg-emerald-400/70"
-                    style={{
-                      width: `${(stats.hadir / stats.totalKaryawan) * 100}%`,
-                    }}
-                  ></div>
-                </div>
-              </div>
 
-              <div className="rounded-xl bg-black/30 p-4 ring-1 ring-yellow-500/10 min-w-[240px]">
-                <div className="flex justify-between">
-                  <div>
-                    <h3 className="text-sm font-medium text-red-400">Sakit</h3>
-                    <p className="text-xl font-semibold text-white">
-                      {stats.sakit}
-                    </p>
+                <div className="rounded-xl bg-black/30 p-4 ring-1 ring-yellow-500/10 min-w-[240px]">
+                  <div className="flex justify-between">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <h3 className="text-sm font-medium text-red-400">
+                          Sakit
+                        </h3>
+                        <div className="rounded-full bg-red-500/10 p-1">
+                          <svg
+                            className="h-4 w-4 text-red-400"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                            />
+                          </svg>
+                        </div>
+                      </div>
+                      <p className="text-xl font-semibold text-white">
+                        {stats.sakit}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <div className="flex items-center gap-2 justify-end">
+                        <h3 className="text-sm font-medium text-blue-400">
+                          Cuti
+                        </h3>
+                        <div className="rounded-full bg-blue-500/10 p-1">
+                          <svg
+                            className="h-4 w-4 text-blue-400"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                            />
+                          </svg>
+                        </div>
+                      </div>
+                      <p className="text-xl font-semibold text-white">
+                        {stats.cuti}
+                      </p>
+                    </div>
                   </div>
-                  <div className="text-right">
-                    <h3 className="text-sm font-medium text-blue-400">Cuti</h3>
-                    <p className="text-xl font-semibold text-white">
-                      {stats.cuti}
-                    </p>
+                  <div className="mt-2 h-2 w-full rounded-full bg-black/50">
+                    <div
+                      className="h-2 rounded-full bg-red-400/70"
+                      style={{
+                        width: `${(stats.sakit / stats.totalKaryawan) * 100}%`,
+                      }}
+                    ></div>
                   </div>
-                </div>
-                <div className="mt-2 h-2 w-full rounded-full bg-black/50">
-                  <div
-                    className="h-2 rounded-full bg-red-400/70"
-                    style={{
-                      width: `${(stats.sakit / stats.totalKaryawan) * 100}%`,
-                    }}
-                  ></div>
-                </div>
-                <div className="mt-1 h-2 w-full rounded-full bg-black/50">
-                  <div
-                    className="h-2 rounded-full bg-blue-400/70"
-                    style={{
-                      width: `${(stats.cuti / stats.totalKaryawan) * 100}%`,
-                    }}
-                  ></div>
+                  <div className="mt-1 h-2 w-full rounded-full bg-black/50">
+                    <div
+                      className="h-2 rounded-full bg-blue-400/70"
+                      style={{
+                        width: `${(stats.cuti / stats.totalKaryawan) * 100}%`,
+                      }}
+                    ></div>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
           {/* Table Card */}
           <div className="rounded-2xl bg-black/40 p-4 sm:p-6 shadow-xl ring-1 ring-yellow-500/20 backdrop-blur-lg">
+            <h2 className="text-xl font-medium text-yellow-400">
+              Table Kehadiran Karyawan
+            </h2>
+            <p className="text-sm text-zinc-400 mt-2 mb-6">
+              Daftar kehadiran seluruh karyawan dari berbagai periode waktu.
+              Gunakan filter untuk mencari data berdasarkan nama, tanggal,
+              lokasi, atau status kehadiran.
+            </p>
+
             <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
               <div>
                 <label className="block text-sm font-medium text-zinc-400 mb-1">
@@ -493,6 +571,7 @@ export default function HRDashboardPage() {
                 </select>
               </div>
             </div>
+
             <div className="flex justify-between items-center mb-4">
               <div className="flex items-center space-x-2">
                 <label className="text-sm text-zinc-400">Tampilkan:</label>
@@ -509,6 +588,7 @@ export default function HRDashboardPage() {
                 <span className="text-sm text-zinc-400">data per halaman</span>
               </div>
             </div>
+
             {isLoading ? (
               <div className="flex flex-col items-center justify-center py-8">
                 <div className="w-10 h-10 border-4 border-yellow-400 border-t-transparent rounded-full animate-spin"></div>
