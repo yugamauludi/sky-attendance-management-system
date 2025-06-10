@@ -16,6 +16,9 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Sky Attendance Management System",
   description: "Sistem Manajemen Kehadiran Karyawan",
+  icons: {
+    icon: "/images/logo.png",
+  },
 };
 
 export default function RootLayout({
