@@ -57,7 +57,7 @@ export default function LeaveRequestPage() {
       <div className="fixed inset-0 bg-[url('/grid.svg')] bg-center opacity-5" />
 
       {/* Scrollable Content Container */}
-      <div className="relative h-screen overflow-auto">
+      <div className="relative h-screen">
         <div className="mx-auto max-w-4xl space-y-6 p-4 pb-2 sm:p-6">
           {/* Header Card dengan Status Cuti */}
           <div className="rounded-2xl bg-black/40 p-6 shadow-xl ring-1 ring-yellow-500/20 backdrop-blur-lg">
