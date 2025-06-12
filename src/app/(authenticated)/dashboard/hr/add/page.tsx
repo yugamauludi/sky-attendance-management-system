@@ -94,7 +94,7 @@ export default function AddEmployeePage() {
     <div className="min-h-screen bg-[#1a1a1a]">
       <Background />
 
-      <div className="relative h-screen overflow-auto">
+      <div className="relative h-screen">
         <div className="mx-auto max-w-2xl space-y-6 p-4 pb-24 sm:p-6">
           {/* Header Card */}
           <div className="rounded-2xl bg-black/40 p-6 shadow-xl ring-1 ring-yellow-500/20 backdrop-blur-lg">

@@ -7,6 +7,7 @@ interface ColumnConfig {
   hiddenOnMobile?: boolean;
   render?: (row: Employee) => React.ReactNode;
   minWidth?: string;
+  sortable?: boolean; // Add this line
 }
 
 interface DataTableProps<T> {
@@ -19,22 +20,7 @@ interface DataTableProps<T> {
   onPageChange: (page: number) => void;
   itemsPerPage: number;
   totalItems: number;
-}
-
-interface Employee {
-  id: string;
-  name: string;
-  gender: string;
-  idNumber: string;
-  birthPlace: string;
-  birthDate: string;
-  email: string;
-  address: string;
-  position: string;
-  department: string;
-  joinDate: string;
-  phoneNumber: string;
-  location: string;
+  onSort?: (key: string, direction: 'asc' | 'desc') => void; // Add this line
 }
 
 export function DataTable<T>({
@@ -47,7 +33,22 @@ export function DataTable<T>({
   onPageChange,
   itemsPerPage,
   totalItems,
+  onSort,
 }: DataTableProps<T>) {
+  const [sortConfig, setSortConfig] = React.useState<{ key: string; direction: 'asc' | 'desc' } | null>(null);
+
+  const handleSort = (key: string) => {
+    const column = columns.find(col => col.key === key);
+    if (!column?.sortable || !onSort) return;
+
+    let direction: 'asc' | 'desc' = 'asc';
+    if (sortConfig?.key === key) {
+      direction = sortConfig.direction === 'asc' ? 'desc' : 'asc';
+    }
+
+    setSortConfig({ key, direction });
+    onSort(key, direction);
+  };
   const getCurrentPageData = () => {    
     return data;
   };
@@ -79,7 +80,6 @@ export function DataTable<T>({
   return (
     <div>
       <div className="overflow-y-auto max-h-[500px] scrollbar-custom">
-        {/* Atur tinggi sesuai kebutuhan */}
         <table className="w-full table-auto">
           <thead>
             <tr className="border-b border-yellow-500/20">
@@ -87,18 +87,23 @@ export function DataTable<T>({
                 <th
                   key={column.key}
                   className={`px-4 py-3 text-left text-sm font-medium text-yellow-400 sticky top-0 bg-zinc-900 z-10
-              ${
-                column.key !== "location"
-                  ? "whitespace-nowrap min-w-[100px]"
-                  : ""
-              }
-              ${column.hiddenOnMobile ? "hidden sm:table-cell" : ""}
-            `}
-                  style={
-                    column.minWidth ? { minWidth: column.minWidth } : undefined
-                  }
+                    ${column.key !== "location" ? "whitespace-nowrap min-w-[100px]" : ""}
+                    ${column.hiddenOnMobile ? "hidden sm:table-cell" : ""}
+                    ${column.sortable ? "cursor-pointer hover:bg-yellow-500/5" : ""}
+                  `}
+                  style={column.minWidth ? { minWidth: column.minWidth } : undefined}
+                  onClick={() => column.sortable && handleSort(column.key)}
                 >
-                  {column.label}
+                  <div className="flex items-center gap-1">
+                    {column.label}
+                    {column.sortable && (
+                      <span className="text-yellow-500/50">
+                        {sortConfig?.key === column.key ? (
+                          sortConfig.direction === 'asc' ? '↑' : '↓'
+                        ) : '↕'}
+                      </span>
+                    )}
+                  </div>
                 </th>
               ))}
             </tr>
@@ -220,4 +225,20 @@ export function DataTable<T>({
       </div>
     </div>
   );
+}
+
+interface Employee {
+  id: string;
+  name: string;
+  gender: string;
+  idNumber: string;
+  birthPlace: string;
+  birthDate: string;
+  email: string;
+  address: string;
+  position: string;
+  department: string;
+  joinDate: string;
+  phoneNumber: string;
+  location: string;
 }

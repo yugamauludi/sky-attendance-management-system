@@ -11,7 +11,7 @@ export function middleware(request: NextRequest) {
     url.pathname = '/login';
     return NextResponse.redirect(url);
   }
-  
+
   // Redirect ke dashboard yang sesuai jika sudah login
   if (request.nextUrl.pathname === '/login' && token) {
     if (role === 'hr') {

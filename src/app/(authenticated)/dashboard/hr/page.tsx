@@ -140,20 +140,56 @@ export default function HRDashboardPage() {
     setFilteredAttendances(filtered);
   }, [attendances, filters]);
 
+  // const handleSort = (key: string, direction: "asc" | "desc") => {
+  //   // Sort your data here
+  //   const sortedData = [...filteredAttendances].sort((a, b) => {
+  //     if (direction === "asc") {
+  //       return (a[key as keyof EmployeeAttendance] as string) >
+  //         (b[key as keyof EmployeeAttendance] as string)
+  //         ? 1
+  //         : -1;
+  //     } else {
+  //       return (a[key as keyof EmployeeAttendance] as string) <
+  //         (b[key as keyof EmployeeAttendance] as string)
+  //         ? 1
+  //         : -1;
+  //     }
+  //   });
+  //   setFilteredAttendances(sortedData);
+  // };
+
   const columns = [
-    { key: "date", label: "Tanggal", hiddenOnMobile: true },
+    { key: "date", 
+      label: "Tanggal", 
+      hiddenOnMobile: true, 
+      // sortable: true 
+    },
     // {key: "dateIn", label: "Tanggal Check In", hiddenOnMobile: true},
     // {key: "dateOut", label: "Tanggal Check Out", hiddenOnMobile: true},
-    { key: "name", label: "Nama Karyawan" },
+    { key: "name", 
+      label: "Nama Karyawan", 
+      // sortable: true 
+    },
     {
       key: "location",
       label: "Lokasi",
       hiddenOnMobile: true,
       minWidth: "200px",
+      // sortable: true,
     },
-    { key: "checkIn", label: "Check In" },
-    { key: "checkOut", label: "Check Out" },
-    { key: "duration", label: "Durasi", hiddenOnMobile: true },
+    { key: "checkIn",
+      label: "Check In", 
+      // sortable: true 
+    },
+    { key: "checkOut", 
+      label: "Check Out", 
+      // sortable: true 
+    },
+    { key: "duration", 
+      label: "Durasi", 
+      hiddenOnMobile: true, 
+      // sortable: true 
+    },
     { key: "status", label: "Status" },
     // { key: "notes", label: "Keterangan", hiddenOnMobile: true },
   ];
@@ -601,6 +637,7 @@ export default function HRDashboardPage() {
                 onRowClick={(attendance) =>
                   setDetailModal({ isOpen: true, employee: attendance })
                 }
+                // onSort={handleSort}
                 renderCell={renderAttendanceCell}
                 currentPage={currentPage}
                 totalPages={(pagination as any).totalPages}
